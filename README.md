@@ -11,6 +11,7 @@ Java Parkings
 - Guilherme Lana
 - João Gabriel Santos
 - Leonardo de Freitas
+- Gustavo Ignacio
 
 ## Professor responsável
 
