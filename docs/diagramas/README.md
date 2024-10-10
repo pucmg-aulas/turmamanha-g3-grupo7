@@ -13,5 +13,5 @@ Coloque aqui todas as versões do seu diagrama de classes. Cada versão deve com
 #
 <br><br>
 # Quarta Versão
-![Diagrama sem nome drawio](https://github.com/user-attachments/assets/4c6f3415-ffe0-4e84-a616-1bb1032f07a5)
+![Diagrama sem nome drawio](https://github.com/user-attachments/assets/09257f26-3223-4512-bd97-e9fe5f7ac454)
 #
