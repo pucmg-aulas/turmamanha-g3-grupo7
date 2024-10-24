@@ -1,5 +1,9 @@
 # Diagramas de classe
 Coloque aqui todas as versões do seu diagrama de classes. Cada versão deve começar com um número de dois dígitos, na ordem crescente.
+# Quinta Versão
+![Diagrama sem nome drawio](https://github.com/user-attachments/assets/7741dae2-49d5-4bbb-acfb-bf1e06b9b3e5)
+#
+<br><br>
 # Quarta Versão
 ![Diagrama sem nome drawio (2)](https://github.com/user-attachments/assets/ca50ef7b-12ae-457e-a8f7-7b650db59e61)
 #
