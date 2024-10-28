@@ -91,41 +91,49 @@ public class MenuEstacionamento {
 
     // Menu de gerenciamento de um estacionamento específico
     // Menu de gerenciamento de um estacionamento específico
-public static void displayMenu(Estacionamento estacionamento) {
-    int opcao;
-    do {
-        System.out.println("\n===== Menu de Gerenciamento do Estacionamento " + estacionamento.getNome() + " =====");
-        System.out.println("1. Adicionar Vaga Manualmente");
-        System.out.println("2. Gerar Múltiplas Vagas Automaticamente");
-        System.out.println("3. Estacionar Veículo");
-        System.out.println("4. Liberar Vaga");
-        System.out.println("5. Listar Vagas");
-        System.out.println("6. Alterar Endereço");
-        System.out.println("7. Alterar Telefone");
-        System.out.println("8. Salvar Dados");
-        System.out.println("9. Carregar Dados");
-        System.out.println("10. Gerenciar Clientes");
-        System.out.println("11. Voltar ao Menu Principal");
-        System.out.print("Selecione uma opção: ");
-        opcao = scanner.nextInt();
-        scanner.nextLine(); 
+    public static void displayMenu(Estacionamento estacionamento) {
+        int opcao;
+        do {
+            System.out.println("\n===== Menu de Gerenciamento do Estacionamento " + estacionamento.getNome() + " =====");
+            System.out.println("1. Adicionar Vaga Manualmente");
+            System.out.println("2. Gerar Múltiplas Vagas Automaticamente");
+            System.out.println("3. Estacionar Veículo");
+            System.out.println("4. Liberar Vaga");
+            System.out.println("5. Listar Vagas");
+            System.out.println("6. Alterar Endereço");
+            System.out.println("7. Alterar Telefone");
+            System.out.println("8. Salvar Dados");
+            System.out.println("9. Carregar Dados");
+            System.out.println("10. Ver Arrecadação Total");
+            System.out.println("11. Gerenciar Clientes");
+            System.out.println("12. Voltar ao Menu Principal");
+            System.out.print("Selecione uma opção: ");
+            opcao = scanner.nextInt();
+            scanner.nextLine(); 
+    
+            switch (opcao) {
+                case 1 -> adicionarVaga(estacionamento); // Adiciona vaga manualmente
+                case 2 -> gerarVagasAutomaticamente(estacionamento); // Gera múltiplas vagas
+                case 3 -> estacionarVeiculo(estacionamento);
+                case 4 -> liberarVaga(estacionamento);
+                case 5 -> listarVagas(estacionamento);
+                case 6 -> alterarEndereco(estacionamento);
+                case 7 -> alterarTelefone(estacionamento);
+                case 8 -> salvarDados(estacionamento);
+                case 9 -> carregarDados(estacionamento);
+                case 10 -> verArrecadacaoTotal(estacionamento); // Nova opção para ver a arrecadação total
+                case 11 -> displayMenuCliente();
+                case 12 -> System.out.println("Voltando ao menu principal...");
+                default -> System.out.println("Opção inválida. Tente novamente.");
+            }
+        } while (opcao != 12);
+    }
 
-        switch (opcao) {
-            case 1 -> adicionarVaga(estacionamento); // Adiciona vaga manualmente
-            case 2 -> gerarVagasAutomaticamente(estacionamento); // Gera múltiplas vagas
-            case 3 -> estacionarVeiculo(estacionamento);
-            case 4 -> liberarVaga(estacionamento);
-            case 5 -> listarVagas(estacionamento); // Nova opção para listar vagas
-            case 6 -> alterarEndereco(estacionamento);
-            case 7 -> alterarTelefone(estacionamento);
-            case 8 -> salvarDados(estacionamento);
-            case 9 -> carregarDados(estacionamento);
-            case 10 -> displayMenuCliente();
-            case 11 -> System.out.println("Voltando ao menu principal...");
-            default -> System.out.println("Opção inválida. Tente novamente.");
-        }
-    } while (opcao != 11);
-}
+private static void verArrecadacaoTotal(Estacionamento estacionamento) {
+    double arrecadacao = estacionamento.getPrecoArrecadado();
+    System.out.printf("Arrecadação total do estacionamento: R$ %.2f%n", arrecadacao);
+    }
+    
 
 // Método para gerar múltiplas vagas automaticamente
 private static void gerarVagasAutomaticamente(Estacionamento estacionamento) {
