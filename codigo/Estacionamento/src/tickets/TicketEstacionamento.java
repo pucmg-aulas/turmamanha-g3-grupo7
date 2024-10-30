@@ -68,6 +68,10 @@ public class TicketEstacionamento {
         return (dataHoraSaida != null) ? dataHoraSaida.format(formatter) : "Ainda não registrado";
     }
 
+    public Vaga getVaga() {
+        return vaga;
+    }
+
     public double getPrecoTotal() {
         return precoTotal;
     }

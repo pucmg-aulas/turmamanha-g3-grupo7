@@ -11,9 +11,9 @@ import veiculos.Cliente;
 import veiculos.Veiculo;
 
 public class MenuEstacionamento {
-    
+
     private static Scanner scanner = new Scanner(System.in);
-    
+
     // Inicializando a rede de estacionamentos
     private static Xulambs redeXulambs = new Xulambs();
 
@@ -94,7 +94,8 @@ public class MenuEstacionamento {
     public static void displayMenu(Estacionamento estacionamento) {
         int opcao;
         do {
-            System.out.println("\n===== Menu de Gerenciamento do Estacionamento " + estacionamento.getNome() + " =====");
+            System.out
+                    .println("\n===== Menu de Gerenciamento do Estacionamento " + estacionamento.getNome() + " =====");
             System.out.println("1. Adicionar Vaga Manualmente");
             System.out.println("2. Gerar Múltiplas Vagas Automaticamente");
             System.out.println("3. Estacionar Veículo");
@@ -109,8 +110,8 @@ public class MenuEstacionamento {
             System.out.println("12. Voltar ao Menu Principal");
             System.out.print("Selecione uma opção: ");
             opcao = scanner.nextInt();
-            scanner.nextLine(); 
-    
+            scanner.nextLine();
+
             switch (opcao) {
                 case 1 -> adicionarVaga(estacionamento); // Adiciona vaga manualmente
                 case 2 -> gerarVagasAutomaticamente(estacionamento); // Gera múltiplas vagas
@@ -129,47 +130,46 @@ public class MenuEstacionamento {
         } while (opcao != 12);
     }
 
-private static void verArrecadacaoTotal(Estacionamento estacionamento) {
-    double arrecadacao = estacionamento.getPrecoArrecadado();
-    System.out.printf("Arrecadação total do estacionamento: R$ %.2f%n", arrecadacao);
+    private static void verArrecadacaoTotal(Estacionamento estacionamento) {
+        double arrecadacao = estacionamento.getPrecoArrecadado();
+        System.out.printf("Arrecadação total do estacionamento: R$ %.2f%n", arrecadacao);
     }
-    
 
-// Método para gerar múltiplas vagas automaticamente
-private static void gerarVagasAutomaticamente(Estacionamento estacionamento) {
-    System.out.println("Digite o número de colunas:");
-    int numColunas = scanner.nextInt();
+    // Método para gerar múltiplas vagas automaticamente
+    private static void gerarVagasAutomaticamente(Estacionamento estacionamento) {
+        System.out.println("Digite o número de colunas:");
+        int numColunas = scanner.nextInt();
 
-    System.out.println("Digite o número de vagas por coluna:");
-    int vagasPorColuna = scanner.nextInt();
+        System.out.println("Digite o número de vagas por coluna:");
+        int vagasPorColuna = scanner.nextInt();
 
-    System.out.println("Selecione o tipo de vaga:");
-    System.out.println("1. Regular");
-    System.out.println("2. PCD");
-    System.out.println("3. Idoso");
-    System.out.println("4. VIP");
-    int tipo = scanner.nextInt();
-    scanner.nextLine(); // Limpar o buffer de entrada
+        System.out.println("Selecione o tipo de vaga:");
+        System.out.println("1. Regular");
+        System.out.println("2. PCD");
+        System.out.println("3. Idoso");
+        System.out.println("4. VIP");
+        int tipo = scanner.nextInt();
+        scanner.nextLine(); // Limpar o buffer de entrada
 
-    // Chama o método de gerar vagas do estacionamento
-    estacionamento.gerarVagas(numColunas, vagasPorColuna, tipo);
-    System.out.println("Vagas geradas com sucesso.");
-}
+        // Chama o método de gerar vagas do estacionamento
+        estacionamento.gerarVagas(numColunas, vagasPorColuna, tipo);
+        System.out.println("Vagas geradas com sucesso.");
+    }
 
-// Método para listar todas as vagas do estacionamento
-private static void listarVagas(Estacionamento estacionamento) {
-    List<Vaga> vagas = estacionamento.getVagas();
+    // Método para listar todas as vagas do estacionamento
+    private static void listarVagas(Estacionamento estacionamento) {
+        List<Vaga> vagas = estacionamento.getVagas();
 
-    if (vagas.isEmpty()) {
-        System.out.println("Nenhuma vaga disponível no momento.");
-    } else {
-        System.out.println("\n===== Lista de Vagas do Estacionamento =====");
-        for (Vaga vaga : vagas) {
-            String status = vaga.isOcupada() ? "Ocupada por " + vaga.getVeiculo().getPlaca() : "Livre";
-            System.out.println("Vaga: " + vaga.getId() + " | Status: " + status);
+        if (vagas.isEmpty()) {
+            System.out.println("Nenhuma vaga disponível no momento.");
+        } else {
+            System.out.println("\n===== Lista de Vagas do Estacionamento =====");
+            for (Vaga vaga : vagas) {
+                String status = vaga.isOcupada() ? "Ocupada por " + vaga.getVeiculo().getPlaca() : "Livre";
+                System.out.println("Vaga: " + vaga.getId() + " | Status: " + status);
+            }
         }
     }
-}
 
     private static void alterarEndereco(Estacionamento estacionamento) {
         System.out.println("Digite o novo endereço do estacionamento:");
@@ -207,19 +207,19 @@ private static void listarVagas(Estacionamento estacionamento) {
     }
 
     private static void estacionarVeiculo(Estacionamento estacionamento) {
-    System.out.println("Digite o ID do cliente:");
-    String idCliente = scanner.nextLine();
-    // Busca o cliente pelo ID
-    Cliente cliente = buscarClientePorId(idCliente);
-    if (cliente == null) {
-        System.out.println("Cliente não encontrado. Cadastre o cliente primeiro.");
-        return; // Sai do método se o cliente não foi encontrado
-    }
+        System.out.println("Digite o ID do cliente:");
+        String idCliente = scanner.nextLine();
+        // Busca o cliente pelo ID
+        Cliente cliente = buscarClientePorId(idCliente);
+        if (cliente == null) {
+            System.out.println("Cliente não encontrado. Cadastre o cliente primeiro.");
+            return; // Sai do método se o cliente não foi encontrado
+        }
         System.out.println("Digite a placa do veículo:");
-        String placa = scanner.nextLine();  
+        String placa = scanner.nextLine();
         System.out.println("Digite o ID da vaga onde deseja estacionar:");
         String idVaga = scanner.nextLine();
-        Veiculo veiculo = new Veiculo(placa, cliente);  // Criação de um veículo temporário com a placa fornecida
+        Veiculo veiculo = new Veiculo(placa, cliente); // Criação de um veículo temporário com a placa fornecida
         if (estacionamento.estacionarVeiculo(veiculo, idVaga)) {
             System.out.println("Veículo estacionado com sucesso.");
         } else {
@@ -239,6 +239,10 @@ private static void listarVagas(Estacionamento estacionamento) {
 
     private static void salvarDados(Estacionamento estacionamento) {
         DadosEstacionamento.salvarVagas(estacionamento.getVagas(), "vagas.txt");
+        DadosEstacionamento.salvarTickets(estacionamento.getTicketsAtivos(), "tickets.txt");
+        DadosEstacionamento.salvarDadosEstacionamento(estacionamento, "estacionamento.txt");
+        DadosEstacionamento.salvarClientes(clientes, "clientes.txt");
+        DadosEstacionamento.salvarVeiculos(clientes, "veiculos.txt");
         System.out.println("Dados salvos com sucesso.");
     }
 
@@ -259,7 +263,7 @@ private static void listarVagas(Estacionamento estacionamento) {
             System.out.println("5. Voltar ao Menu de Gerenciamento do Estacionamento");
             System.out.print("Selecione uma opção: ");
             opcao = scanner.nextInt();
-            scanner.nextLine(); 
+            scanner.nextLine();
             switch (opcao) {
                 case 1 -> adicionarCliente();
                 case 2 -> adicionarVeiculoCliente();
@@ -284,12 +288,12 @@ private static void listarVagas(Estacionamento estacionamento) {
     private static void adicionarVeiculoCliente() {
         System.out.println("Digite o ID do cliente:");
         String idCliente = scanner.nextLine();
-        Cliente cliente = buscarClientePorId(idCliente);   // Busca do cliente pelo ID
+        Cliente cliente = buscarClientePorId(idCliente); // Busca do cliente pelo ID
 
         if (cliente != null) {
             System.out.println("Digite a placa do veículo:");
             String placa = scanner.nextLine();
-            Veiculo veiculo = new Veiculo(placa, cliente);   // Criação do veículo com a placa fornecida
+            Veiculo veiculo = new Veiculo(placa, cliente); // Criação do veículo com a placa fornecida
             cliente.adicionarVeiculo(veiculo);
             System.out.println("Veículo adicionado ao cliente.");
         } else {

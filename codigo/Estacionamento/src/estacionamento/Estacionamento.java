@@ -20,7 +20,6 @@ public class Estacionamento {
     private Map<String, TicketEstacionamento> ticketsAtivos;
     private double precoArrecadado;
 
-
     public Estacionamento(String nome, String endereco, String telefone) {
         this.nome = nome;
         this.endereco = endereco;
@@ -30,6 +29,7 @@ public class Estacionamento {
         this.ticketsAtivos = new HashMap<>();
         this.precoArrecadado = 0.0;
     }
+
     public Estacionamento(String nome) {
         this.nome = nome;
         this.endereco = null;
@@ -44,9 +44,9 @@ public class Estacionamento {
             char letraColuna = (char) ('A' + coluna); // Gera a letra da coluna (A, B, C...)
             for (int vagaNum = 1; vagaNum <= vagasPorColuna; vagaNum++) {
                 String idVaga = String.format("%c%02d", letraColuna, vagaNum); // Ex: A01, B02, etc.
-                
+
                 // Usa a fábrica de vagas para criar a vaga
-                Vaga vaga = VagaFactory.criarVaga(tipoVaga, idVaga); 
+                Vaga vaga = VagaFactory.criarVaga(tipoVaga, idVaga);
                 if (vaga != null) {
                     adicionarVaga(vaga); // Adiciona a vaga ao estacionamento
                     System.out.println("Vaga " + idVaga + " criada e adicionada.");
@@ -98,9 +98,8 @@ public class Estacionamento {
     }
 
     public void limparVagas() {
-        vagas.clear(); 
+        vagas.clear();
     }
-    
 
     public boolean liberarVaga(String idVaga) {
         for (Vaga vaga : vagas) {
@@ -128,7 +127,21 @@ public class Estacionamento {
         System.out.println("Vaga não encontrada ou já está livre.");
         return false;
     }
-    
+
+    public double calcularValorMedioUtilizacao() {
+        int totalTickets = ticketsAtivos.size();
+
+        if (totalTickets == 0) {
+            return 0.0;
+        }
+
+        double valorTotal = 0.0;
+        for (TicketEstacionamento ticket : ticketsAtivos.values()) {
+            valorTotal += ticket.getPrecoTotal();
+        }
+
+        return valorTotal / totalTickets;
+    }
 
     // Retorna a lista de vagas
     public List<Vaga> getVagas() {
@@ -142,9 +155,13 @@ public class Estacionamento {
 
     public double getPrecoArrecadado() {
         return precoArrecadado;
-    }   
+    }
 
     public String getNome() {
         return nome;
     }
-}   
+
+    public List<TicketEstacionamento> getTicketsAtivos() {
+        return new ArrayList<>(ticketsAtivos.values());
+    }
+}
