@@ -1,5 +1,9 @@
 package view;
 
+import controller.ClienteController;
+import dao.ClienteDAO;
+import model.ClienteModel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,7 +13,7 @@ public class MenuCliente extends JFrame {
 
     private JButton adicionarClienteButton;
     private JButton adicionarVeiculoButton;
-    private JButton removerVeiculoButton; // Alterado para "Remover Veículo"
+    private JButton removerVeiculoButton;
 
     public MenuCliente() {
         setTitle("Menu Cliente");
@@ -17,32 +21,35 @@ public class MenuCliente extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Painel principal
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1, 10, 10)); // 3 linhas, 1 coluna, espaçamento de 10px
+        // Painel principal com GridLayout
+        JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
 
-        // Botão Adicionar Cliente
+        // Inicialização dos botões
         adicionarClienteButton = new JButton("Adicionar Cliente");
-        panel.add(adicionarClienteButton);
-
-        // Botão Adicionar Veículo
         adicionarVeiculoButton = new JButton("Adicionar Veículo");
-        panel.add(adicionarVeiculoButton);
+        removerVeiculoButton = new JButton("Remover Veículo");
 
-        // Botão Remover Veículo
-        removerVeiculoButton = new JButton("Remover Veículo"); // Alterado para "Remover Veículo"
+        // Adiciona os botões ao painel
+        panel.add(adicionarClienteButton);
+        panel.add(adicionarVeiculoButton);
         panel.add(removerVeiculoButton);
 
         // Adiciona o painel ao frame
         add(panel);
 
-        // Configura os listeners para os botões
+        // Configura o listener do botão "Adicionar Cliente" para abrir a tela com o controlador
         adicionarClienteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Abre a tela de Adicionar Cliente
-                AdicionarCliente adicionarCliente = new AdicionarCliente();
-                adicionarCliente.setVisible(true);
+                // Cria a visão e o modelo do cliente
+                AdicionarCliente adicionarClienteView = new AdicionarCliente();
+                ClienteModel clienteModel = new ClienteModel("", "");
+
+                // Cria o controlador e associa à visão e ao modelo
+                ClienteController clienteController = new ClienteController(clienteModel, adicionarClienteView);
+
+                // Exibe a tela de adicionar cliente
+                adicionarClienteView.setVisible(true);
             }
         });
 
@@ -55,7 +62,7 @@ public class MenuCliente extends JFrame {
             }
         });
 
-        removerVeiculoButton.addActionListener(new ActionListener() { // Alterado para "Remover Veículo"
+        removerVeiculoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Abre a tela de Remover Veículo
@@ -65,6 +72,7 @@ public class MenuCliente extends JFrame {
         });
     }
 
+    // Método main para executar o MenuCliente
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             MenuCliente menuCliente = new MenuCliente();
