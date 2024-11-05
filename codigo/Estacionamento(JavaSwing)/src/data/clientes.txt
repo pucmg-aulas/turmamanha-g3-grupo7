@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1;asdsa;dsadsad
 2;diogo henrique moreira da silva;rfvi-0983
 3;asds
@@ -7,3 +8,13 @@
 7;asdsad;asdfs0a-asff
 8;Anônimo;asdsad
 9;Anônimo
+=======
+1;asdsa;dsadsad
+2;diogo henrique moreira da silva;rfvi-0983
+3;asds
+4;Anônimo
+5;Anônimo
+6;ascas
+7;asdsad;asdfs0a-asff
+8;Anônimo;asdsad
+>>>>>>> d9070482504422a0b550f2cc893f54b1a437c91e

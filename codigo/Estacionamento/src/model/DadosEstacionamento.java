@@ -39,7 +39,11 @@ public class DadosEstacionamento {
                 int tipoInt = Integer.parseInt(tipo);
                 Vaga vaga = VagaFactory.criarVaga(tipoInt, id);
                 if (ocupada) {
+<<<<<<< HEAD
                     vaga.ocuparVaga(new Veiculo("XXX-XXXX", "clienteID")); // Se a vaga estava ocupada no arquivo,
+=======
+                    vaga.ocuparVaga(new Veiculo("XXX-XXXX", "ClienteID")); // Se a vaga estava ocupada no arquivo,
+>>>>>>> d9070482504422a0b550f2cc893f54b1a437c91e
                                                                            // recria a ocupação com um veículo fictício
 
                 }
