@@ -63,13 +63,18 @@ public class AdicionarVeiculo extends JFrame {
         adicionarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String id = idTextField.getText();
-                String placa = placaTextField.getText();
+                String id = idTextField.getText().trim();
+                String placa = placaTextField.getText().trim();
 
-                // Adiciona o veículo ao cliente com o ID especificado
-                clienteDAO.adicionarVeiculoAoCliente(id, new VeiculoModel(placa));
-                JOptionPane.showMessageDialog(null, "Veículo adicionado:\nID: " + id + "\nPlaca: " + placa);
-                dispose();
+                // Verifica se ambos os campos estão preenchidos
+                if (id.isEmpty() || placa.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos.");
+                } else {
+                    // Adiciona o veículo ao cliente com o ID especificado
+                    clienteDAO.adicionarVeiculoAoCliente(id, new VeiculoModel(placa));
+                    JOptionPane.showMessageDialog(null, "Veículo adicionado:\nID: " + id + "\nPlaca: " + placa);
+                    dispose(); // Fecha a janela após adicionar
+                }
             }
         });
     }
