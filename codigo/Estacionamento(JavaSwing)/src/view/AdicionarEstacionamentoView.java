@@ -76,16 +76,21 @@ public class AdicionarEstacionamentoView extends JFrame {
         adicionarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nome = nomeTextField.getText();
-                String endereco = enderecoTextField.getText();
-                String telefone = telefoneTextField.getText();
+                String nome = nomeTextField.getText().trim();
+                String endereco = enderecoTextField.getText().trim();
+                String telefone = telefoneTextField.getText().trim();
 
-                // Cria um novo modelo de estacionamento e salva no arquivo
-                EstacionamentoModel estacionamento = new EstacionamentoModel(nome, endereco, telefone);
-                estacionamentoDAO.salvarEstacionamento(estacionamento);
+                // Verifica se algum dos campos está vazio
+                if (nome.isEmpty() || endereco.isEmpty() || telefone.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos.");
+                } else {
+                    // Cria um novo modelo de estacionamento e salva no arquivo
+                    EstacionamentoModel estacionamento = new EstacionamentoModel(nome, endereco, telefone);
+                    estacionamentoDAO.salvarEstacionamento(estacionamento);
 
-                JOptionPane.showMessageDialog(null, "Estacionamento adicionado com sucesso!");
-                dispose(); // Fecha a janela após adicionar
+                    JOptionPane.showMessageDialog(null, "Estacionamento adicionado com sucesso!");
+                    dispose(); // Fecha a janela após adicionar
+                }
             }
         });
     }
