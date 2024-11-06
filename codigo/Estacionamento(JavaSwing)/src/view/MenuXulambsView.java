@@ -9,8 +9,8 @@ public class MenuXulambsView extends JFrame {
 
     private JButton adicionarEstacionamentoButton;
     private JButton removerEstacionamentoButton;
-    private JButton gerenciarButton;
     private JButton menuDeClienteButton;
+    private JButton listarEstacionamentosButton;
 
     public MenuXulambsView() {
         setTitle("Menu Xulambs");
@@ -36,12 +36,11 @@ public class MenuXulambsView extends JFrame {
             }
         });
 
-        gerenciarButton = new JButton("Gerenciar");
-        gerenciarButton.addActionListener(new ActionListener() {
+        listarEstacionamentosButton = new JButton("Listar Estacionamentos");
+        listarEstacionamentosButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Abre a tela GerenciarView
-                new GerenciarView().setVisible(true);
+                new ListarEstacionamentosView().setVisible(true);
             }
         });
 
@@ -55,8 +54,8 @@ public class MenuXulambsView extends JFrame {
 
         panel.add(adicionarEstacionamentoButton);
         panel.add(removerEstacionamentoButton);
-        panel.add(gerenciarButton);
         panel.add(menuDeClienteButton);
+        panel.add(listarEstacionamentosButton);
 
         add(panel);
     }
