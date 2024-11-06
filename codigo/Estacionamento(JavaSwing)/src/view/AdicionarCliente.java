@@ -8,6 +8,7 @@ public class AdicionarCliente extends JFrame {
     private JTextField nomeTextField;
     private JButton adicionarButton;
     private JButton adicionarAnonimoButton;
+    private ActionListener adicionarListener; // Novo listener armazenado
 
     public AdicionarCliente() {
         setTitle("Adicionar Cliente");
@@ -38,10 +39,20 @@ public class AdicionarCliente extends JFrame {
         panel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(panel);
+
+        // Ação de validação antes do listener
+        adicionarButton.addActionListener(e -> {
+            if (getNome().trim().isEmpty()) {
+                mostrarMensagem("Por favor, preencha o campo de nome.");
+            } else if (adicionarListener != null) {
+                // Chama o listener apenas se o campo de nome estiver preenchido
+                adicionarListener.actionPerformed(e);
+            }
+        });
     }
 
     public void adicionarClienteListener(ActionListener listener) {
-        adicionarButton.addActionListener(listener);
+        this.adicionarListener = listener; // Armazena o listener para uso após validação
     }
 
     public void adicionarAnonimoListener(ActionListener listener) {
