@@ -20,10 +20,6 @@ public class XulambsController {
         clienteDAO.salvarCliente(cliente);
     }
 
-    public boolean removerCliente(String id) {
-        return clienteDAO.remover(id);
-    }
-
     public List<ClienteModel> getClientes() {
         return clienteDAO.listarTodos();
     }
