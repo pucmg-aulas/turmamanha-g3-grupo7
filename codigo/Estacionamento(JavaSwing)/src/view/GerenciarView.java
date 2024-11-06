@@ -153,6 +153,14 @@ public class GerenciarView extends JFrame {
         tabelaVeiculos = new JTable(new Object[0][4], colunas);
         JScrollPane scrollPane = new JScrollPane(tabelaVeiculos);
 
+        JPanel botoesVeiculo = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btnAdicionarVeiculo = new JButton("Estacionar Veiculo");
+        JButton btnRemoverVeiculo = new JButton("Remover Veiculo");
+
+        botoesVeiculo.add(btnAdicionarVeiculo);
+        botoesVeiculo.add(btnRemoverVeiculo);
+
+        veiculosPanel.add(botoesVeiculo, BorderLayout.NORTH);
         veiculosPanel.add(scrollPane, BorderLayout.CENTER);
     }
 
