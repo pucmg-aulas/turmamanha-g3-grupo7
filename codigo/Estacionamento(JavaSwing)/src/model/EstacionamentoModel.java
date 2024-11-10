@@ -24,7 +24,11 @@ public class EstacionamentoModel {
         this.ticketsAtivos = new HashMap<>();
     }
 
+<<<<<<< HEAD
     public EstacionamentoModel( int id, String nome, String endereco, String telefone) {
+=======
+    public EstacionamentoModel(int id, String nome, String endereco, String telefone) {
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
@@ -106,4 +110,8 @@ public class EstacionamentoModel {
     public void incrementarPrecoArrecadado(double valor) {
         this.precoArrecadado += valor;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec

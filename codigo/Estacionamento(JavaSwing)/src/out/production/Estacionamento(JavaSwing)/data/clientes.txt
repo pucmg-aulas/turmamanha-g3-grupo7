@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1;asdsa;dsadsad
 2;diogo henrique moreira da silva;rfvi-0983
 3;asds
@@ -13,3 +14,20 @@
 14;Joao gabriel;pxc-gvf,xxx-vvvv
 15;gustavo
 16;Danilo;ops2a59
+=======
+1;asdsa;dsadsad
+2;diogo henrique moreira da silva;rfvi-0983
+3;asds
+4;Anônimo
+5;Anônimo
+6;ascas
+7;asdsad
+8;Anônimo;asdsad
+9;Anônimo
+10;Digdin;Frdsds adsd
+11;Anônimo
+13;João Gabriel
+14;Joao gabriel;pxc-gvf,xxx-vvvv
+15;gustavo
+16;Danilo;ops2a59
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec

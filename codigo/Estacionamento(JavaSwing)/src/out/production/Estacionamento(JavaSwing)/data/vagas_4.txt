@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 A01;Padrão;false
 A02;Padrão;false
 B01;Padrão;false
 B02;Padrão;false
 C01;Padrão;false
 C02;Padrão;false
+=======
+A01;Padrão;false
+A02;Padrão;false
+B01;Padrão;false
+B02;Padrão;false
+C01;Padrão;false
+C02;Padrão;false
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec

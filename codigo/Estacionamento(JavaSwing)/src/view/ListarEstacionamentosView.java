@@ -36,7 +36,11 @@ public class ListarEstacionamentosView extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Configuração da tabela
+<<<<<<< HEAD
         modeloTabela = new DefaultTableModel(new Object[] { "ID", "Nome", "Endereço", "Telefone" }, 0) {
+=======
+        modeloTabela = new DefaultTableModel(new Object[] { "Nome", "Endereço", "Telefone" }, 0) {
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Torna a tabela não editável
@@ -76,6 +80,7 @@ public class ListarEstacionamentosView extends JFrame {
         }
 
         // Obtém os dados do estacionamento selecionado
+<<<<<<< HEAD
         int idEstacionamento = (int) modeloTabela.getValueAt(linhaSelecionada, 0);
         String nomeEstacionamento = (String) modeloTabela.getValueAt(linhaSelecionada, 1);
         String enderecoEstacionamento = (String) modeloTabela.getValueAt(linhaSelecionada, 2);
@@ -84,6 +89,14 @@ public class ListarEstacionamentosView extends JFrame {
         // Cria um objeto EstacionamentoModel com os dados selecionados
         EstacionamentoModel estacionamentoSelecionado = new EstacionamentoModel(
                 idEstacionamento,
+=======
+        String nomeEstacionamento = (String) modeloTabela.getValueAt(linhaSelecionada, 0);
+        String enderecoEstacionamento = (String) modeloTabela.getValueAt(linhaSelecionada, 1);
+        String telefoneEstacionamento = (String) modeloTabela.getValueAt(linhaSelecionada, 2);
+
+        // Cria um objeto EstacionamentoModel com os dados selecionados
+        EstacionamentoModel estacionamentoSelecionado = new EstacionamentoModel( 
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec
                 nomeEstacionamento,
                 enderecoEstacionamento,
                 telefoneEstacionamento
@@ -96,11 +109,16 @@ public class ListarEstacionamentosView extends JFrame {
     private void carregarDadosEstacionamentos() {
         java.util.List<EstacionamentoModel> estacionamentos = estacionamentoDAO.listarEstacionamentos();
 
+<<<<<<< HEAD
         modeloTabela.setRowCount(0);
 
         for (EstacionamentoModel estacionamento : estacionamentos) {
             modeloTabela.addRow(new Object[] {
                     estacionamento.getId(),
+=======
+        for (EstacionamentoModel estacionamento : estacionamentos) {
+            modeloTabela.addRow(new Object[] {
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec
                     estacionamento.getNome(),
                     estacionamento.getEndereco(),
                     estacionamento.getTelefone()
@@ -114,6 +132,7 @@ public class ListarEstacionamentosView extends JFrame {
             tela.setVisible(true);
         });
     }
+<<<<<<< HEAD
 
     // Método para remover estacionamento
     private void removerEstacionamento() {
@@ -135,4 +154,6 @@ public class ListarEstacionamentosView extends JFrame {
         }
     }
 
+=======
+>>>>>>> 7fd6d79c017107357f86c21e3b81e7610c0461ec
 }
