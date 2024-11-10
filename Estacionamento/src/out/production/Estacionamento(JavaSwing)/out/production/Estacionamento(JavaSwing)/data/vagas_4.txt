@@ -1,0 +1,6 @@
+A01;Padrão;false
+A02;Padrão;false
+B01;Padrão;false
+B02;Padrão;false
+C01;Padrão;false
+C02;Padrão;false
