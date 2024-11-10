@@ -1,8 +1,0 @@
-A01;Padrão;false
-A02;Padrão;false
-B01;Padrão;false
-B02;Padrão;false
-A01;Padrão;false
-A02;Padrão;false
-B01;Padrão;false
-B02;Padrão;false
