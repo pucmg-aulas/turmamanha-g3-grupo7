@@ -1,117 +1,103 @@
 package dao;
 
 import model.EstacionamentoModel;
+import persistencia.BancoDados;
 
-import java.io.*;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EstacionamentoDAO {
-    private static final String DIRETORIO_DATA = "data";
-    private static final String ARQUIVO_ESTACIONAMENTOS = DIRETORIO_DATA + "/estacionamentos.txt";
-
-    public EstacionamentoDAO() {
-        // Cria o diretório 'data' se ele não existir
-        File directory = new File(DIRETORIO_DATA);
-        if (!directory.exists()) {
-            boolean dirCreated = directory.mkdir();
-            System.out.println("Diretório 'data' criado: " + dirCreated);
-        }
-
-        File arquivo = new File(ARQUIVO_ESTACIONAMENTOS);
-        try {
-            if (!arquivo.exists()) {
-                boolean fileCreated = arquivo.createNewFile();
-                System.out.println("Arquivo 'estacionamentos.txt' criado: " + fileCreated);
-            }
-        } catch (IOException e) {
-            System.err.println("Erro ao criar o arquivo 'estacionamentos.txt': " + e.getMessage());
-        }
-    }
 
     public void salvarEstacionamento(EstacionamentoModel estacionamento) {
-        int novoId = gerarId(); // Gera um novo ID para o estacionamento
-        estacionamento.setId(novoId);
+        String sql = "INSERT INTO estacionamento (nome, endereco, telefone) VALUES (?, ?, ?)";
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_ESTACIONAMENTOS, true))) {
-            writer.write(novoId + ";" + estacionamento.getNome() + ";" + estacionamento.getEndereco() + ";" + estacionamento.getTelefone());
-            writer.newLine();
-            System.out.println("Estacionamento salvo: ID=" + novoId + ", Nome=" + estacionamento.getNome());
-        } catch (IOException e) {
+        try (Connection connection = BancoDados.getConexao();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setString(1, estacionamento.getNome());
+            stmt.setString(2, estacionamento.getEndereco());
+            stmt.setString(3, estacionamento.getTelefone());
+
+            int rowsInserted = stmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Estacionamento salvo com sucesso: " + estacionamento.getNome());
+            }
+
+        } catch (SQLException e) {
             System.err.println("Erro ao salvar estacionamento: " + e.getMessage());
         }
     }
 
     public List<EstacionamentoModel> listarEstacionamentos() {
         List<EstacionamentoModel> estacionamentos = new ArrayList<>();
+        String sql = "SELECT id_estacionamento, nome, endereco, telefone FROM estacionamento";
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_ESTACIONAMENTOS))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(";");
-                if (data.length == 4) { // Inclui ID no arquivo
-                    try {
-                        int id = Integer.parseInt(data[0]);
-                        String nome = data[1];
-                        String endereco = data[2];
-                        String telefone = data[3];
-                        EstacionamentoModel estacionamento = new EstacionamentoModel(id, nome, endereco, telefone);
-                        estacionamentos.add(estacionamento);
-                    } catch (NumberFormatException e) {
-                        System.err.println("Linha ignorada ao listar estacionamentos: " + line);
-                    }
-                }
+        try (Connection connection = BancoDados.getConexao();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id_estacionamento");
+                String nome = rs.getString("nome");
+                String endereco = rs.getString("endereco");
+                String telefone = rs.getString("telefone");
+
+                EstacionamentoModel estacionamento = new EstacionamentoModel(id, nome, endereco, telefone);
+                estacionamentos.add(estacionamento);
             }
-        } catch (IOException e) {
-            System.err.println("Erro ao ler os estacionamentos: " + e.getMessage());
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar estacionamentos: " + e.getMessage());
         }
 
         return estacionamentos;
     }
 
     public boolean removerEstacionamentoPorId(int id) {
-        List<EstacionamentoModel> estacionamentos = listarEstacionamentos();
-        boolean removed = estacionamentos.removeIf(estacionamento -> estacionamento.getId() == id);
+        String sql = "DELETE FROM estacionamento WHERE id_estacionamento = ?";
+        boolean removed = false;
 
-        if (removed) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARQUIVO_ESTACIONAMENTOS))) {
-                for (EstacionamentoModel estacionamento : estacionamentos) {
-                    writer.write(estacionamento.getId() + ";" + estacionamento.getNome() + ";" + estacionamento.getEndereco() + ";" + estacionamento.getTelefone());
-                    writer.newLine();
-                }
-                System.out.println("Estacionamento com ID " + id + " removido.");
-            } catch (IOException e) {
-                System.err.println("Erro ao atualizar o arquivo de estacionamentos: " + e.getMessage());
+        try (Connection connection = BancoDados.getConexao();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            int rowsDeleted = stmt.executeUpdate();
+            removed = rowsDeleted > 0;
+
+            if (removed) {
+                System.out.println("Estacionamento com ID " + id + " removido com sucesso.");
             }
-        } else {
-            System.out.println("Estacionamento com ID " + id + " não encontrado.");
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao remover estacionamento: " + e.getMessage());
         }
 
         return removed;
     }
 
-    private int gerarId() {
-        int ultimoId = 0;
+    public EstacionamentoModel buscarEstacionamentoPorId(int id) {
+        String sql = "SELECT id_estacionamento, nome, endereco, telefone FROM estacionamento WHERE id_estacionamento = ?";
+        EstacionamentoModel estacionamento = null;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(ARQUIVO_ESTACIONAMENTOS))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(";");
-                if (data.length > 0) {
-                    try {
-                        int id = Integer.parseInt(data[0]); // Tenta converter o primeiro elemento para um número inteiro
-                        if (id > ultimoId) {
-                            ultimoId = id;
-                        }
-                    } catch (NumberFormatException e) {
-                        System.err.println("Linha ignorada ao gerar ID: " + line);
-                    }
+        try (Connection connection = BancoDados.getConexao();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String nome = rs.getString("nome");
+                    String endereco = rs.getString("endereco");
+                    String telefone = rs.getString("telefone");
+
+                    estacionamento = new EstacionamentoModel(id, nome, endereco, telefone);
                 }
             }
-        } catch (IOException e) {
-            System.err.println("Erro ao ler o último ID: " + e.getMessage());
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar estacionamento: " + e.getMessage());
         }
 
-        return ultimoId + 1; // Retorna o próximo ID sequencial
+        return estacionamento;
     }
 }
