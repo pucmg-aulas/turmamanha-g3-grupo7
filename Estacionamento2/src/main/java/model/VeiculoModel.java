@@ -2,7 +2,7 @@ package model;
 
 public class VeiculoModel {
     private String placa;
-    private ClienteModel cliente;
+    private ClienteModel cliente; // Correção: Certifique-se de que o ClienteModel está importado corretamente
 
     public VeiculoModel(String placa) {
         this.placa = placa;
