@@ -14,12 +14,20 @@ public class ClienteModel {
         this.veiculos = new ArrayList<>();
     }
 
+    public ClienteModel() {
+        this.veiculos = new ArrayList<>();
+    }
+
     public void adicionarVeiculo(VeiculoModel veiculo) {
         veiculos.add(veiculo);
     }
 
     public List<VeiculoModel> getVeiculos() {
         return veiculos;
+    }
+
+    public void setVeiculos(List<VeiculoModel> veiculos) {
+        this.veiculos = veiculos;
     }
 
     public String getNome() {
@@ -32,5 +40,9 @@ public class ClienteModel {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
