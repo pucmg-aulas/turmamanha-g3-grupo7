@@ -1,6 +1,6 @@
 package view;
 
-import dao.EstacionamentoDAO;
+import controller.ListarEstacionamentoController;
 import model.EstacionamentoModel;
 
 import javax.swing.*;
@@ -12,16 +12,16 @@ import java.util.List;
 
 public class ListarEstacionamentosView extends JFrame {
 
-    // Componentes principais
-    private JPanel panel; // Painel principal
-    private JTable tabelaEstacionamentos; // Tabela para exibir os estacionamentos
-    private DefaultTableModel tabelaModelo; // Modelo da tabela
-    private JButton gerenciarEstacionamentoButton; // Botão "Gerenciar Estacionamento"
-    private JButton atualizarListaButton; // Botão "Atualizar Lista"
-    private JButton fecharButton; // Botão "Fechar"
+    private JPanel panel;
+    private JTable tabelaEstacionamentos;
+    private DefaultTableModel tabelaModelo;
+    private JButton gerenciarEstacionamentoButton;
+    private JButton atualizarListaButton;
+    private JButton fecharButton;
+    private JButton adicionarButton;
+    private JButton removerButton;
 
-    // DAO para acessar os dados
-    private EstacionamentoDAO estacionamentoDAO;
+    private ListarEstacionamentoController estacionamentoController;
 
     public ListarEstacionamentosView() {
         setTitle("Lista de Estacionamentos");
@@ -29,50 +29,44 @@ public class ListarEstacionamentosView extends JFrame {
         setSize(600, 400);
         setLocationRelativeTo(null);
 
-        estacionamentoDAO = new EstacionamentoDAO(); // Inicializa o DAO
+        estacionamentoController = new ListarEstacionamentoController();
 
         inicializarComponentes();
-        carregarEstacionamentosNaTabela(); // Preenche a tabela com os dados
-        adicionarEventos(); // Adiciona os eventos aos botões
+        carregarEstacionamentosNaTabela();
+        adicionarEventos();
     }
 
     private void inicializarComponentes() {
-        // Inicializa o painel principal
         panel = new JPanel(new BorderLayout());
-        setContentPane(panel); // Define como o conteúdo principal do JFrame
+        setContentPane(panel);
 
-        // Configuração da tabela
         tabelaModelo = new DefaultTableModel(new Object[]{"ID", "Nome", "Endereço", "Telefone"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Torna a tabela não editável
+                return false;
             }
         };
         tabelaEstacionamentos = new JTable(tabelaModelo);
         JScrollPane scrollPane = new JScrollPane(tabelaEstacionamentos);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Painel para os botões
         JPanel botoesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-        // Botão "Gerenciar Estacionamento"
         gerenciarEstacionamentoButton = new JButton("Gerenciar Estacionamento");
-        botoesPanel.add(gerenciarEstacionamentoButton);
-
-        // Botão "Atualizar Lista"
         atualizarListaButton = new JButton("Atualizar Lista");
-        botoesPanel.add(atualizarListaButton);
-
-        // Botão "Fechar"
         fecharButton = new JButton("Fechar");
+        adicionarButton = new JButton("Adicionar");
+        removerButton = new JButton("Remover");
+
+        botoesPanel.add(gerenciarEstacionamentoButton);
+        botoesPanel.add(atualizarListaButton);
+        botoesPanel.add(adicionarButton);
+        botoesPanel.add(removerButton);
         botoesPanel.add(fecharButton);
 
-        // Adiciona o painel de botões ao painel principal
         panel.add(botoesPanel, BorderLayout.SOUTH);
     }
 
     private void adicionarEventos() {
-        // Evento para o botão "Gerenciar Estacionamento"
         gerenciarEstacionamentoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -80,7 +74,6 @@ public class ListarEstacionamentosView extends JFrame {
             }
         });
 
-        // Evento para o botão "Atualizar Lista"
         atualizarListaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -88,24 +81,33 @@ public class ListarEstacionamentosView extends JFrame {
             }
         });
 
-        // Evento para o botão "Fechar"
+        adicionarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                adicionarEstacionamento();
+            }
+        });
+
+        removerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removerEstacionamento();
+            }
+        });
+
         fecharButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose(); // Fecha a janela
+                dispose();
             }
         });
     }
 
     private void carregarEstacionamentosNaTabela() {
-        // Limpa os dados existentes na tabela
         tabelaModelo.setRowCount(0);
+        List<EstacionamentoModel> estacionamentos = estacionamentoController.listarEstacionamentos();
 
-        // Obtém os dados do DAO
-        List<EstacionamentoModel> estacionamentos = estacionamentoDAO.listarEstacionamentos();
-
-        // Verifica se há dados para exibir
-        if (estacionamentos == null || estacionamentos.isEmpty()) {
+        if (estacionamentos.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Nenhum estacionamento encontrado.",
                     "Aviso",
@@ -113,7 +115,6 @@ public class ListarEstacionamentosView extends JFrame {
             return;
         }
 
-        // Preenche a tabela com os dados dos estacionamentos
         for (EstacionamentoModel estacionamento : estacionamentos) {
             tabelaModelo.addRow(new Object[]{
                     estacionamento.getId(),
@@ -125,7 +126,6 @@ public class ListarEstacionamentosView extends JFrame {
     }
 
     private void gerenciarEstacionamentoSelecionado() {
-        // Obtém a linha selecionada na tabela
         int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
         if (linhaSelecionada == -1) {
             JOptionPane.showMessageDialog(this,
@@ -135,23 +135,57 @@ public class ListarEstacionamentosView extends JFrame {
             return;
         }
 
-        // Obtém os dados da linha selecionada
         int idEstacionamento = (int) tabelaModelo.getValueAt(linhaSelecionada, 0);
-        String nomeEstacionamento = (String) tabelaModelo.getValueAt(linhaSelecionada, 1);
-        String enderecoEstacionamento = (String) tabelaModelo.getValueAt(linhaSelecionada, 2);
-        String telefoneEstacionamento = (String) tabelaModelo.getValueAt(linhaSelecionada, 3);
+        EstacionamentoModel estacionamento = estacionamentoController.buscarEstacionamentoPorId(idEstacionamento);
 
-        // Cria um objeto EstacionamentoModel com os dados selecionados
-        EstacionamentoModel estacionamentoSelecionado = new EstacionamentoModel(
-                idEstacionamento,
-                nomeEstacionamento,
-                enderecoEstacionamento,
-                telefoneEstacionamento
-        );
+        if (estacionamento != null) {
+            GerenciarView gerenciarView = new GerenciarView(estacionamento);
+            gerenciarView.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Estacionamento não encontrado.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
-        // Abre a tela de gerenciamento (GerenciarView)
-        GerenciarView gerenciarView = new GerenciarView(estacionamentoSelecionado);
-        gerenciarView.setVisible(true);
+    private void adicionarEstacionamento() {
+        String nome = JOptionPane.showInputDialog(this, "Digite o nome do estacionamento:");
+        String endereco = JOptionPane.showInputDialog(this, "Digite o endereço:");
+        String telefone = JOptionPane.showInputDialog(this, "Digite o telefone:");
+
+        if (nome != null && endereco != null && telefone != null) {
+            EstacionamentoModel novoEstacionamento = new EstacionamentoModel(nome, endereco, telefone);
+            estacionamentoController.adicionarEstacionamento(novoEstacionamento);
+            carregarEstacionamentosNaTabela();
+        }
+    }
+
+    private void removerEstacionamento() {
+        int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Por favor, selecione um estacionamento para remover.",
+                    "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idEstacionamento = (int) tabelaModelo.getValueAt(linhaSelecionada, 0);
+        boolean removido = estacionamentoController.removerEstacionamento(idEstacionamento);
+
+        if (removido) {
+            JOptionPane.showMessageDialog(this,
+                    "Estacionamento removido com sucesso.",
+                    "Sucesso",
+                    JOptionPane.INFORMATION_MESSAGE);
+            carregarEstacionamentosNaTabela();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao remover o estacionamento.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public static void main(String[] args) {
