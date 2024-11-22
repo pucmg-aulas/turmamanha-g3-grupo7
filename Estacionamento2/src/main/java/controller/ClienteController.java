@@ -2,39 +2,47 @@ package controller;
 
 import dao.ClienteDAO;
 import model.ClienteModel;
-import view.AdicionarCliente;
+import model.VeiculoModel;
+
+import java.util.List;
 
 public class ClienteController {
-    private ClienteModel modelo;
-    private AdicionarCliente view;
-    private ClienteDAO dao;
+    private ClienteDAO clienteDAO;
 
-    public ClienteController(ClienteModel modelo, AdicionarCliente view) {
-        this.modelo = modelo;
-        this.view = view;
-        this.dao = new ClienteDAO();
-
-        this.view.adicionarClienteListener(e -> adicionarCliente());
-
-        this.view.adicionarAnonimoListener(e -> adicionarClienteAnonimo());
+    public ClienteController() {
+        this.clienteDAO = new ClienteDAO();
     }
 
-    private void adicionarCliente() {
-        String nome = view.getNome();
-        String id = dao.gerarId(); // Gera um ID
-        modelo = new ClienteModel(nome, id); //novo ClienteModel com o ID gerado
-        dao.salvarCliente(modelo);
-        view.mostrarMensagem("Cliente adicionado: " + nome + " (ID: " + id + ")");
-        view.dispose();
-
+    // Adiciona um cliente e retorna o objeto criado
+    public ClienteModel adicionarCliente(String nome) {
+        ClienteModel cliente = new ClienteModel(nome, null); // O ID será gerado pelo DAO
+        clienteDAO.salvarCliente(cliente);
+        return cliente;
     }
 
-    private void adicionarClienteAnonimo() {
-        String id = dao.gerarId(); //ID único para o cliente anônimo
-        modelo = new ClienteModel("Anônimo", id);
-        dao.salvarCliente(modelo);
-        view.mostrarMensagem("Cliente anônimo adicionado com ID: " + id);
-        view.dispose();
+    // Adiciona um veículo a um cliente
+    public void adicionarVeiculoAoCliente(String idCliente, String placa) {
+        VeiculoModel veiculo = new VeiculoModel(placa);
+        clienteDAO.adicionarVeiculoAoCliente(idCliente, veiculo);
+    }
 
+    // Retorna a lista de todos os clientes e seus veículos
+    public List<ClienteModel> listarTodosClientes() {
+        return clienteDAO.listarTodos();
+    }
+
+    // Remove um cliente pelo ID
+    public void removerCliente(String idCliente) {
+        clienteDAO.removerCliente(idCliente);
+    }
+
+    // Busca um cliente pelo ID
+    public ClienteModel buscarClientePorId(String id) {
+        return clienteDAO.buscarPorId(id);
+    }
+
+    // Busca um cliente pela placa de um veículo
+    public ClienteModel buscarClientePorPlaca(String placa) {
+        return clienteDAO.buscarClientePorPlaca(placa);
     }
 }
