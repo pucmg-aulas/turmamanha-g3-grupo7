@@ -1,6 +1,6 @@
 package view;
 
-import dao.ClienteDAO;
+import controller.ClienteController;
 import model.ClienteModel;
 import model.VeiculoModel;
 
@@ -14,11 +14,11 @@ public class MenuCliente extends JFrame {
     private JButton btnAdicionarVeiculo;
     private JList<String> listaClientes;
     private DefaultListModel<String> listaClientesModel;
-    private ClienteDAO clienteDAO;
+    private ClienteController clienteController;
     private List<ClienteModel> clientesCadastrados;
 
     public MenuCliente() {
-        clienteDAO = new ClienteDAO();
+        clienteController = new ClienteController();
 
         setTitle("Menu de Cliente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,7 +55,7 @@ public class MenuCliente extends JFrame {
 
     private void atualizarListaClientes() {
         listaClientesModel.clear();
-        clientesCadastrados = clienteDAO.listarTodos();
+        clientesCadastrados = clienteController.listarTodosClientes();
         for (ClienteModel cliente : clientesCadastrados) {
             String clienteInfo = cliente.getId() + " - " + cliente.getNome();
             if (!cliente.getVeiculos().isEmpty()) {
@@ -78,8 +78,7 @@ public class MenuCliente extends JFrame {
             nome = "Anônimo";
         }
 
-        ClienteModel cliente = new ClienteModel(nome, clienteDAO.gerarId());
-        clienteDAO.salvarCliente(cliente);
+        ClienteModel cliente = clienteController.adicionarCliente(nome); // Usa o Controller
         atualizarListaClientes();
     }
 
@@ -100,8 +99,7 @@ public class MenuCliente extends JFrame {
             return;
         }
 
-        VeiculoModel veiculo = new VeiculoModel(placa, clienteSelecionado);
-        clienteDAO.adicionarVeiculoAoCliente(clienteSelecionado.getId(), veiculo);
+        clienteController.adicionarVeiculoAoCliente(clienteSelecionado.getId(), placa); // Usa o Controller
         atualizarListaClientes();
     }
 
