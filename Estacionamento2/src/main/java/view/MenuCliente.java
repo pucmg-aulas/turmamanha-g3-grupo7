@@ -83,14 +83,15 @@ public class MenuCliente extends JFrame {
     }
 
     private void abrirAdicionarVeiculo() {
-        if (clientesCadastrados.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nenhum cliente cadastrado!", "Erro", JOptionPane.ERROR_MESSAGE);
+        // Verifica se algum cliente está selecionado na lista
+        int selectedIndex = listaClientes.getSelectedIndex();
+        if (selectedIndex == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione um cliente na lista!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Janela para selecionar cliente
-        ClienteModel clienteSelecionado = selecionarCliente();
-        if (clienteSelecionado == null) return; // Cancelado
+        // Obtém o cliente selecionado
+        ClienteModel clienteSelecionado = clientesCadastrados.get(selectedIndex);
 
         // Solicitar placa do veículo
         String placa = JOptionPane.showInputDialog(this, "Digite a placa do veículo:", "Adicionar Veículo", JOptionPane.PLAIN_MESSAGE);
@@ -99,7 +100,10 @@ public class MenuCliente extends JFrame {
             return;
         }
 
-        clienteController.adicionarVeiculoAoCliente(clienteSelecionado.getId(), placa); // Usa o Controller
+        // Usa o clienteController para salvar o veículo
+        clienteController.adicionarVeiculoAoCliente(clienteSelecionado.getId(), placa);
+
+        // Atualiza a lista exibida
         atualizarListaClientes();
     }
 
