@@ -1,5 +1,6 @@
 package view;
 
+import controller.EstacionamentoController;
 import model.*;
 import controller.VagaController;
 import dao.ClienteDAO;
@@ -39,6 +40,10 @@ public class GerenciarView extends JFrame {
     private JTextField txtEndereco;
     private JTextField txtTelefone;
     private JLabel lblArrecadado;
+    private JLabel lblValorMedio; // Nova variável
+    private JComboBox<String> mesComboBox;
+    private JComboBox<Integer> anoComboBox;
+
 
     // Tabelas
     private JTable tabelaVagas;
@@ -142,6 +147,41 @@ public class GerenciarView extends JFrame {
         gbc.gridx = 1;
         lblArrecadado = new JLabel("R$ 0,00");
         dadosGeraisPanel.add(lblArrecadado, gbc);
+
+        // Valor Médio por Utilização
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        dadosGeraisPanel.add(new JLabel("Valor Médio por Utilização:"), gbc);
+        gbc.gridx = 1;
+        lblValorMedio = new JLabel("R$ 0,00");
+        dadosGeraisPanel.add(lblValorMedio, gbc);
+
+        // Mês e Ano
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        dadosGeraisPanel.add(new JLabel("Mês e Ano:"), gbc);
+        gbc.gridx = 1;
+
+        // Configurar combo boxes
+        mesComboBox = new JComboBox<>(new String[]{"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"});
+        anoComboBox = new JComboBox<>();
+        int anoAtual = LocalDateTime.now().getYear();
+        for (int ano = anoAtual - 5; ano <= anoAtual + 5; ano++) {
+            anoComboBox.addItem(ano);
+        }
+        JPanel mesAnoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        mesAnoPanel.add(mesComboBox);
+        mesAnoPanel.add(anoComboBox);
+
+        dadosGeraisPanel.add(mesAnoPanel, gbc);
+
+        // Botão para calcular arrecadação do mês
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        JButton btnCalcularArrecadacaoMes = new JButton("Calcular Arrecadação do Mês");
+        btnCalcularArrecadacaoMes.addActionListener(e -> calcularArrecadacaoMensal());
+        dadosGeraisPanel.add(btnCalcularArrecadacaoMes, gbc);
     }
 
     private void inicializarVagas() {
@@ -263,11 +303,18 @@ public class GerenciarView extends JFrame {
 
     private void preencherDados() {
         // Dados gerais
-        txtId.setText(String.valueOf(estacionamento.getId())); // Exibe o ID correto
+        txtId.setText(String.valueOf(estacionamento.getId()));
         txtNome.setText(estacionamento.getNome());
         txtEndereco.setText(estacionamento.getEndereco());
         txtTelefone.setText(estacionamento.getTelefone());
-        lblArrecadado.setText(String.format("R$ %.2f", estacionamento.getPrecoArrecadado()));
+
+        // Buscar arrecadação e valor médio diretamente do Controller
+        EstacionamentoController controller = new EstacionamentoController(estacionamento);
+        double arrecadacao = controller.getArrecadacaoTotal();
+        double valorMedio = controller.getValorMedioUtilizacao();
+
+        lblArrecadado.setText(String.format("R$ %.2f", arrecadacao));
+        lblValorMedio.setText(String.format("R$ %.2f", valorMedio));
 
         // Preencher tabelas
         atualizarTabelaVagas();
@@ -312,7 +359,6 @@ public class GerenciarView extends JFrame {
                 new String[]{"ID", "Tipo", "Status", "Veículo"}
         ));
     }
-
 
     private void atualizarTabelaVeiculos() {
         Map<String, TicketEstacionamentoModel> ticketsAtivos = estacionamento.getTicketsAtivos();
@@ -471,4 +517,20 @@ public class GerenciarView extends JFrame {
         clienteDAO.removerCliente(clienteId);
         carregarClientes(); // Atualiza a tabela de clientes
     }
+
+    private void calcularArrecadacaoMensal() {
+        int mesSelecionado = mesComboBox.getSelectedIndex() + 1;
+        int anoSelecionado = (int) anoComboBox.getSelectedItem();
+
+        // Chamar o Controller para obter a arrecadação mensal
+        EstacionamentoController controller = new EstacionamentoController(estacionamento);
+        double arrecadacaoMensal = controller.getArrecadacaoMensal(mesSelecionado, anoSelecionado);
+
+        JOptionPane.showMessageDialog(this,
+                String.format("Arrecadação em %s de %d: R$ %.2f",
+                        mesComboBox.getSelectedItem(), anoSelecionado, arrecadacaoMensal),
+                "Arrecadação Mensal",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
 }
