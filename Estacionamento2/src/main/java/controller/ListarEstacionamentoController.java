@@ -9,6 +9,7 @@ import model.VagaPadraoModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ListarEstacionamentoController {
 
@@ -21,8 +22,6 @@ public class ListarEstacionamentoController {
     public List<EstacionamentoModel> listarEstacionamentos() {
         return estacionamentoDAO.listarEstacionamentos();
     }
-
-
 
     public boolean adicionarEstacionamento(String nome, String endereco, String telefone, int colunas, int vagasPorColuna) {
         EstacionamentoModel estacionamento = new EstacionamentoModel(nome, endereco, telefone);
@@ -76,4 +75,13 @@ public class ListarEstacionamentoController {
     public EstacionamentoModel buscarEstacionamentoPorId(int id) {
         return estacionamentoDAO.buscarEstacionamentoPorId(id);
     }
+
+    public List<Object[]> obterRankingEstacionamentos() {
+        return EstacionamentoDAO.buscarRankingEstacionamentos();
+    }
+
+    public List<Map<String, Object>> getRankingUtilizacao() {
+        return estacionamentoDAO.listarRankingUtilizacao();
+    }
+
 }
