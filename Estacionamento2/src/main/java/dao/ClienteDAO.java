@@ -5,6 +5,7 @@ import model.TicketModel;
 import model.VeiculoModel;
 import persistencia.BancoDados;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -237,5 +238,35 @@ public class ClienteDAO {
 
         return tickets;
     }
+
+    public List<Object[]> calcularRankingClientes() {
+        String sql = """
+        SELECT c.nome, SUM(t.custo) AS total_gasto
+        FROM cliente c
+        JOIN ticket t ON c.id_cliente = t.id_cliente
+        GROUP BY c.id_cliente, c.nome
+        ORDER BY total_gasto DESC
+        LIMIT 5
+    """;
+
+        List<Object[]> ranking = new ArrayList<>();
+
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String nomeCliente = rs.getString("nome");
+                BigDecimal totalGasto = rs.getBigDecimal("total_gasto");
+                ranking.add(new Object[]{nomeCliente, totalGasto});
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao calcular o ranking de clientes: " + e.getMessage());
+        }
+
+        return ranking;
+    }
+
 
 }
