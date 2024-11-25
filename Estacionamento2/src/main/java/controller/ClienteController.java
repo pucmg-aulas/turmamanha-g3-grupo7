@@ -51,4 +51,9 @@ public class ClienteController {
         return clienteDAO.listarTicketsDoCliente(idCliente);
     }
 
+    public List<Object[]> obterRankingClientes() {
+        return clienteDAO.calcularRankingClientes();
+    }
+
+
 }
