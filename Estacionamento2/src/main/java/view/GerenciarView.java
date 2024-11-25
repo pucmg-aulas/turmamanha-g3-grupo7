@@ -2,7 +2,6 @@ package view;
 
 import controller.EstacionamentoController;
 import model.*;
-import controller.VagaController;
 import dao.ClienteDAO;
 import javax.swing.*;
 import java.awt.*;
@@ -228,7 +227,6 @@ public class GerenciarView extends JFrame {
 
         gerarVagasButton.addActionListener(e -> {
             GerarVagasView gerarVagasView = new GerarVagasView();
-            new VagaController(gerarVagasView);
             gerarVagasView.setVisible(true);
 
             atualizarTabelaVagas();
