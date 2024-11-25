@@ -1,6 +1,7 @@
 package dao;
 
 import model.ClienteModel;
+import model.TicketModel;
 import model.VeiculoModel;
 import persistencia.BancoDados;
 
@@ -204,4 +205,37 @@ public class ClienteDAO {
             System.err.println("Erro ao remover cliente: " + e.getMessage());
         }
     }
+
+    public List<TicketModel> listarTicketsDoCliente(String idCliente) {
+        String sql = "SELECT * FROM ticket WHERE id_cliente = ?";
+        List<TicketModel> tickets = new ArrayList<>();
+
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, Integer.parseInt(idCliente));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                TicketModel ticket = new TicketModel(
+                        rs.getInt("id_ticket"),
+                        rs.getInt("id_estacionamento"),
+                        rs.getString("id_vaga"),
+                        rs.getInt("id_cliente"),
+                        rs.getTimestamp("entrada").toLocalDateTime(),
+                        rs.getTimestamp("saida") != null ? rs.getTimestamp("saida").toLocalDateTime() : null,
+                        rs.getBigDecimal("custo"),
+                        rs.getString("placa")
+                );
+                tickets.add(ticket);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar tickets do cliente: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return tickets;
+    }
+
 }
