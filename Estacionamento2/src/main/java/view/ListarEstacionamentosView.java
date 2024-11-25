@@ -6,8 +6,6 @@ import model.EstacionamentoModel;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 public class ListarEstacionamentosView extends JFrame {
@@ -15,21 +13,22 @@ public class ListarEstacionamentosView extends JFrame {
     private JPanel panel;
     private JTable tabelaEstacionamentos;
     private DefaultTableModel tabelaModelo;
+
     private JButton gerenciarEstacionamentoButton;
     private JButton atualizarListaButton;
     private JButton fecharButton;
     private JButton adicionarButton;
     private JButton removerButton;
 
-    private ListarEstacionamentoController estacionamentoController;
+    private ListarEstacionamentoController controller;
 
-    public ListarEstacionamentosView() {
+    public ListarEstacionamentosView(ListarEstacionamentoController controller) {
+        this.controller = controller;
+
         setTitle("Lista de Estacionamentos");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 400);
         setLocationRelativeTo(null);
-
-        estacionamentoController = new ListarEstacionamentoController();
 
         inicializarComponentes();
         carregarEstacionamentosNaTabela();
@@ -67,53 +66,16 @@ public class ListarEstacionamentosView extends JFrame {
     }
 
     private void adicionarEventos() {
-        gerenciarEstacionamentoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                gerenciarEstacionamentoSelecionado();
-            }
-        });
-
-        atualizarListaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                carregarEstacionamentosNaTabela();
-            }
-        });
-
-        adicionarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                adicionarEstacionamento();
-            }
-        });
-
-        removerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removerEstacionamento();
-            }
-        });
-
-        fecharButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        gerenciarEstacionamentoButton.addActionListener(e -> gerenciarEstacionamentoSelecionado());
+        atualizarListaButton.addActionListener(e -> carregarEstacionamentosNaTabela());
+        adicionarButton.addActionListener(e -> adicionarEstacionamento());
+        removerButton.addActionListener(e -> removerEstacionamento());
+        fecharButton.addActionListener(e -> dispose());
     }
 
     private void carregarEstacionamentosNaTabela() {
         tabelaModelo.setRowCount(0);
-        List<EstacionamentoModel> estacionamentos = estacionamentoController.listarEstacionamentos();
-
-        if (estacionamentos.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Nenhum estacionamento encontrado.",
-                    "Aviso",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        List<EstacionamentoModel> estacionamentos = controller.listarEstacionamentos();
 
         for (EstacionamentoModel estacionamento : estacionamentos) {
             tabelaModelo.addRow(new Object[]{
@@ -125,30 +87,6 @@ public class ListarEstacionamentosView extends JFrame {
         }
     }
 
-    private void gerenciarEstacionamentoSelecionado() {
-        int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
-        if (linhaSelecionada == -1) {
-            JOptionPane.showMessageDialog(this,
-                    "Por favor, selecione um estacionamento para gerenciar.",
-                    "Aviso",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int idEstacionamento = (int) tabelaModelo.getValueAt(linhaSelecionada, 0);
-        EstacionamentoModel estacionamento = estacionamentoController.buscarEstacionamentoPorId(idEstacionamento);
-
-        if (estacionamento != null) {
-            GerenciarView gerenciarView = new GerenciarView(estacionamento);
-            gerenciarView.setVisible(true);
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Estacionamento não encontrado.",
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     private void adicionarEstacionamento() {
         String nome = JOptionPane.showInputDialog(this, "Digite o nome do estacionamento:");
         String endereco = JOptionPane.showInputDialog(this, "Digite o endereço:");
@@ -156,55 +94,63 @@ public class ListarEstacionamentosView extends JFrame {
         String colunasStr = JOptionPane.showInputDialog(this, "Digite o número de colunas:");
         String vagasPorColunaStr = JOptionPane.showInputDialog(this, "Digite o número de vagas por coluna:");
 
-        if (nome != null && endereco != null && telefone != null && colunasStr != null && vagasPorColunaStr != null) {
-            try {
-                int colunas = Integer.parseInt(colunasStr);
-                int vagasPorColuna = Integer.parseInt(vagasPorColunaStr);
+        try {
+            int colunas = Integer.parseInt(colunasStr);
+            int vagasPorColuna = Integer.parseInt(vagasPorColunaStr);
 
-                EstacionamentoModel novoEstacionamento = new EstacionamentoModel(nome, endereco, telefone);
-                estacionamentoController.adicionarEstacionamento(novoEstacionamento, colunas, vagasPorColuna);
+            boolean sucesso = controller.adicionarEstacionamento(nome, endereco, telefone, colunas, vagasPorColuna);
+            if (sucesso) {
                 carregarEstacionamentosNaTabela();
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this,
-                        "Número de colunas e vagas por coluna devem ser valores numéricos.",
-                        "Erro",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Estacionamento adicionado com sucesso!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao adicionar estacionamento.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Número inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     private void removerEstacionamento() {
         int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
         if (linhaSelecionada == -1) {
-            JOptionPane.showMessageDialog(this,
-                    "Por favor, selecione um estacionamento para remover.",
-                    "Aviso",
-                    JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um estacionamento.");
             return;
         }
 
         int idEstacionamento = (int) tabelaModelo.getValueAt(linhaSelecionada, 0);
-        boolean removido = estacionamentoController.removerEstacionamento(idEstacionamento);
+        boolean sucesso = controller.removerEstacionamento(idEstacionamento);
 
-        if (removido) {
-            JOptionPane.showMessageDialog(this,
-                    "Estacionamento removido com sucesso.",
-                    "Sucesso",
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (sucesso) {
             carregarEstacionamentosNaTabela();
+            JOptionPane.showMessageDialog(this, "Estacionamento removido com sucesso.");
         } else {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao remover o estacionamento.",
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro ao remover estacionamento.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void gerenciarEstacionamentoSelecionado() {
+        int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um estacionamento.");
+            return;
+        }
+
+        int idEstacionamento = (int) tabelaModelo.getValueAt(linhaSelecionada, 0);
+        EstacionamentoModel estacionamento = controller.buscarEstacionamentoPorId(idEstacionamento);
+
+        if (estacionamento != null) {
+            GerenciarView gerenciarView = new GerenciarView(estacionamento);
+            gerenciarView.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Estacionamento não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            ListarEstacionamentosView tela = new ListarEstacionamentosView();
-            tela.setVisible(true);
+            ListarEstacionamentoController controller = new ListarEstacionamentoController();
+            ListarEstacionamentosView view = new ListarEstacionamentosView(controller);
+            view.setVisible(true);
         });
     }
 }

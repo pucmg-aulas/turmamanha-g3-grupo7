@@ -2,6 +2,7 @@ package controller;
 
 import dao.ClienteDAO;
 import model.ClienteModel;
+import model.TicketModel;
 import model.VeiculoModel;
 
 import java.util.List;
@@ -45,4 +46,9 @@ public class ClienteController {
     public ClienteModel buscarClientePorPlaca(String placa) {
         return clienteDAO.buscarClientePorPlaca(placa);
     }
+
+    public List<TicketModel> listarTicketsDoCliente(String idCliente) {
+        return clienteDAO.listarTicketsDoCliente(idCliente);
+    }
+
 }

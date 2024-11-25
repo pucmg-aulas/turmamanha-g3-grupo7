@@ -1,5 +1,7 @@
 package view;
 
+import controller.ListarEstacionamentoController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -40,7 +42,9 @@ public class MenuXulambsView extends JFrame {
         listarEstacionamentosButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ListarEstacionamentosView().setVisible(true);
+                // Criação do controller e da view com o controller
+                ListarEstacionamentoController controller = new ListarEstacionamentoController();
+                new ListarEstacionamentosView(controller).setVisible(true);
             }
         });
 
