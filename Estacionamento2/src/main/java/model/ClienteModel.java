@@ -1,5 +1,6 @@
 package model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ public class ClienteModel {
     private String nome;
     private String id;
     private List<VeiculoModel> veiculos;
+    private BigDecimal totalGasto;
 
     public ClienteModel(String nome, String id) {
         this.nome = nome;
@@ -44,5 +46,13 @@ public class ClienteModel {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public BigDecimal getTotalGasto() {
+        return totalGasto;
+    }
+
+    public void setTotalGasto(BigDecimal totalGasto) {
+        this.totalGasto = totalGasto;
     }
 }
