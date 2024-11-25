@@ -1,48 +1,73 @@
-package controller;
+package view;
 
-import dao.ClienteDAO;
-import model.ClienteModel;
-import model.VeiculoModel;
+import controller.ListarEstacionamentoController;
 
-import java.util.List;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class ClienteController {
-    private ClienteDAO clienteDAO;
+public class MenuXulambsView extends JFrame {
 
-    public ClienteController() {
-        this.clienteDAO = new ClienteDAO();
+    private JButton adicionarEstacionamentoButton;
+    private JButton removerEstacionamentoButton;
+    private JButton menuDeClienteButton;
+    private JButton listarEstacionamentosButton;
+
+    public MenuXulambsView() {
+        setTitle("Menu Xulambs");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+
+        adicionarEstacionamentoButton = new JButton("Adicionar Estacionamento");
+        adicionarEstacionamentoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new AdicionarEstacionamentoView().setVisible(true);
+            }
+        });
+
+        removerEstacionamentoButton = new JButton("Remover Estacionamento");
+        removerEstacionamentoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new RemoverEstacionamentoView().setVisible(true);
+            }
+        });
+
+        listarEstacionamentosButton = new JButton("Listar Estacionamentos");
+        listarEstacionamentosButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Criação do controller e da view com o controller
+                ListarEstacionamentoController controller = new ListarEstacionamentoController();
+                new ListarEstacionamentosView(controller).setVisible(true);
+            }
+        });
+
+        menuDeClienteButton = new JButton("Menu de Cliente");
+        menuDeClienteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new MenuCliente().setVisible(true);
+            }
+        });
+
+        panel.add(adicionarEstacionamentoButton);
+        panel.add(removerEstacionamentoButton);
+        panel.add(menuDeClienteButton);
+        panel.add(listarEstacionamentosButton);
+
+        add(panel);
     }
 
-    // Adiciona um cliente e retorna o objeto criado
-    public ClienteModel adicionarCliente(String nome) {
-        ClienteModel cliente = new ClienteModel(nome, null); // O ID será gerado pelo DAO
-        clienteDAO.salvarCliente(cliente);
-        return cliente;
-    }
-
-    // Adiciona um veículo a um cliente
-    public void adicionarVeiculoAoCliente(String idCliente, String placa) {
-        VeiculoModel veiculo = new VeiculoModel(placa);
-        clienteDAO.adicionarVeiculoAoCliente(idCliente, veiculo);
-    }
-
-    // Retorna a lista de todos os clientes e seus veículos
-    public List<ClienteModel> listarTodosClientes() {
-        return clienteDAO.listarTodos();
-    }
-
-    // Remove um cliente pelo ID
-    public void removerCliente(String idCliente) {
-        clienteDAO.removerCliente(idCliente);
-    }
-
-    // Busca um cliente pelo ID
-    public ClienteModel buscarClientePorId(String id) {
-        return clienteDAO.buscarPorId(id);
-    }
-
-    // Busca um cliente pela placa de um veículo
-    public ClienteModel buscarClientePorPlaca(String placa) {
-        return clienteDAO.buscarClientePorPlaca(placa);
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            MenuXulambsView tela = new MenuXulambsView();
+            tela.setVisible(true);
+        });
     }
 }
