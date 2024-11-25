@@ -66,7 +66,6 @@ public class MenuCliente extends JFrame {
         setVisible(true);
     }
 
-
     private void atualizarListaClientes() {
         listaClientesModel.clear();
         clientesCadastrados = clienteController.listarTodosClientes();
@@ -97,7 +96,6 @@ public class MenuCliente extends JFrame {
     }
 
     private void abrirAdicionarVeiculo() {
-        // Verifica se algum cliente está selecionado na lista
         int selectedIndex = listaClientes.getSelectedIndex();
         if (selectedIndex == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecione um cliente na lista!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -131,7 +129,7 @@ public class MenuCliente extends JFrame {
         if (tickets.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nenhum histórico encontrado para este cliente.", "Informação", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            exibirDialogoHistorico(tickets); // Chama o método para exibir o JDialog
+            exibirDialogoHistorico(tickets);
         }
     }
 
@@ -187,10 +185,6 @@ public class MenuCliente extends JFrame {
         dialog.setVisible(true);
     }
 
-
-
-    // Método para atualizar a tabela com uma lista de tickets
-    // Método para atualizar a tabela com uma lista de tickets
     private void atualizarTabela(List<TicketModel> tickets, DefaultTableModel tableModel) {
         tableModel.setRowCount(0); // Limpa a tabela
 
@@ -210,8 +204,6 @@ public class MenuCliente extends JFrame {
         }
     }
 
-
-    // Método para filtrar tickets por mês e ano
     private List<TicketModel> filtrarTickets(List<TicketModel> tickets, String mes, String ano) {
         return tickets.stream()
                 .filter(ticket -> {
@@ -224,8 +216,6 @@ public class MenuCliente extends JFrame {
                 .toList();
     }
 
-
-    // Método auxiliar para converter o mês do ComboBox para um número
     private int comboMesParaNumero(String mes) {
         return switch (mes) {
             case "Janeiro" -> 1;
@@ -245,50 +235,88 @@ public class MenuCliente extends JFrame {
     }
 
     private void exibirRankingClientes() {
-        List<Object[]> ranking = clienteController.obterRankingClientes();
+            JDialog dialog = new JDialog(this, "Ranking de Clientes", true);
+            dialog.setSize(600, 400);
+            dialog.setLocationRelativeTo(this);
 
-        if (ranking.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nenhum dado encontrado para o ranking.", "Informação", JOptionPane.INFORMATION_MESSAGE);
-            return;
+            String[] colunas = {"Posição", "Cliente", "Total Gasto"};
+            DefaultTableModel tableModel = new DefaultTableModel(colunas, 0);
+
+            JTable tabela = new JTable(tableModel);
+            JScrollPane scrollPane = new JScrollPane(tabela);
+
+            // Combobox para o mês
+            JComboBox<String> comboMes = new JComboBox<>(new String[]{
+                    "Todos", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+            });
+
+            // Campo de texto para o ano
+            JTextField txtAno = new JTextField(4);
+
+            // Botão para aplicar o filtro
+            JButton btnFiltrar = new JButton("Filtrar");
+            btnFiltrar.addActionListener(e -> {
+                String mesSelecionado = (String) comboMes.getSelectedItem();
+                String anoSelecionado = txtAno.getText();
+
+                // Validar entradas
+                if (anoSelecionado.isEmpty() && !mesSelecionado.equals("Todos")) {
+                    JOptionPane.showMessageDialog(dialog, "Por favor, insira um ano para aplicar o filtro.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Obter o mês como número
+                int mesNumero = mesSelecionado.equals("Todos") ? -1 : comboMesParaNumero(mesSelecionado);
+
+                // Chamar o controlador para buscar o ranking filtrado
+                List<ClienteModel> ranking = clienteController.listarRankingClientes(mesNumero, anoSelecionado.isEmpty() ? -1 : Integer.parseInt(anoSelecionado));
+
+                // Atualizar a tabela com o ranking filtrado
+                atualizarTabelaRanking(ranking, tableModel);
+            });
+
+            // Painel superior com os filtros
+            JPanel panelFiltros = new JPanel();
+            panelFiltros.add(new JLabel("Mês:"));
+            panelFiltros.add(comboMes);
+            panelFiltros.add(new JLabel("Ano:"));
+            panelFiltros.add(txtAno);
+            panelFiltros.add(btnFiltrar);
+
+            dialog.add(panelFiltros, BorderLayout.NORTH);
+            dialog.add(scrollPane, BorderLayout.CENTER);
+
+            JButton btnFechar = new JButton("Fechar");
+            btnFechar.addActionListener(e -> dialog.dispose());
+            JPanel panelBotoes = new JPanel();
+            panelBotoes.add(btnFechar);
+            dialog.add(panelBotoes, BorderLayout.SOUTH);
+
+            // Carregar ranking inicial (sem filtro)
+            List<ClienteModel> rankingInicial = clienteController.listarRankingClientes(-1, -1);
+            atualizarTabelaRanking(rankingInicial, tableModel);
+
+            dialog.setVisible(true);
         }
 
-        // Criação do JDialog
-        JDialog dialog = new JDialog(this, "Ranking de Clientes", true);
-        dialog.setSize(400, 300);
-        dialog.setLocationRelativeTo(this);
+    private void atualizarTabelaRanking(List<ClienteModel> ranking, DefaultTableModel tableModel) {
+        tableModel.setRowCount(0);
 
-        // Tabela para exibir o ranking
-        String[] colunas = {"Cliente", "Total Gasto"};
-        DefaultTableModel tableModel = new DefaultTableModel(colunas, 0);
-
-        // Formatação para moeda brasileira
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
 
-        for (Object[] linha : ranking) {
+        int posicao = 1;
+        for (ClienteModel cliente : ranking) {
             tableModel.addRow(new Object[]{
-                    linha[0], // Nome do Cliente
-                    currencyFormatter.format(linha[1]) // Total Gasto formatado
+                    posicao++,
+                    cliente.getNome(),
+                    currencyFormatter.format(cliente.getTotalGasto())
             });
         }
-
-        JTable tabela = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(tabela);
-        dialog.add(scrollPane, BorderLayout.CENTER);
-
-        // Botão de Fechar
-        JButton btnFechar = new JButton("Fechar");
-        btnFechar.addActionListener(e -> dialog.dispose());
-        JPanel panelBotoes = new JPanel();
-        panelBotoes.add(btnFechar);
-        dialog.add(panelBotoes, BorderLayout.SOUTH);
-
-        dialog.setVisible(true);
     }
-
 
     public static void main(String[] args) {
         new MenuCliente();
     }
-
 
 }
