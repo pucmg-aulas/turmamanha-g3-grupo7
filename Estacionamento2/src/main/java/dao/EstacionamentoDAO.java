@@ -5,7 +5,9 @@ import persistencia.BancoDados;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EstacionamentoDAO {
 
@@ -158,6 +160,63 @@ public class EstacionamentoDAO {
         }
 
         return vagas;
+    }
+
+    public static List<Object[]> buscarRankingEstacionamentos() {
+        List<Object[]> ranking = new ArrayList<>();
+        String sql = "SELECT e.nome, COALESCE(SUM(t.custo), 0) AS total_faturado " +
+                "FROM estacionamento e " +
+                "LEFT JOIN ticket t ON e.id_estacionamento = t.id_estacionamento " +
+                "GROUP BY e.nome " +
+                "ORDER BY total_faturado DESC";
+
+        try (Connection connection = BancoDados.getConexao();
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String nome = rs.getString("nome");
+                double totalFaturado = rs.getDouble("total_faturado");
+                ranking.add(new Object[]{nome, totalFaturado});
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar ranking de estacionamentos: " + e.getMessage());
+        }
+
+        return ranking;
+    }
+
+    public List<Map<String, Object>> listarRankingUtilizacao() {
+        String sql = """
+        SELECT 
+            e.id_estacionamento AS idEstacionamento,
+            e.nome AS nomeEstacionamento,
+            COALESCE(COUNT(t.id_ticket), 0) AS totalUtilizacoes
+        FROM estacionamento e
+        LEFT JOIN ticket t ON e.id_estacionamento = t.id_estacionamento
+        GROUP BY e.id_estacionamento, e.nome
+        ORDER BY totalUtilizacoes DESC
+    """;
+
+        List<Map<String, Object>> ranking = new ArrayList<>();
+
+        try (Connection connection = BancoDados.getConexao();
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("idEstacionamento", rs.getInt("idEstacionamento"));
+                row.put("nomeEstacionamento", rs.getString("nomeEstacionamento"));
+                row.put("totalUtilizacoes", rs.getInt("totalUtilizacoes"));
+                ranking.add(row);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar ranking de utilização: " + e.getMessage());
+        }
+
+        return ranking;
     }
 
 }
