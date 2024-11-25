@@ -8,8 +8,8 @@ import model.VeiculoModel;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.List;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 public class MenuCliente extends JFrame {
@@ -18,6 +18,7 @@ public class MenuCliente extends JFrame {
     private JButton btnAdicionarVeiculo;
     private JList<String> listaClientes;
     private JButton historicoButton;
+    private JButton rankingButton;
     private DefaultListModel<String> listaClientesModel;
     private ClienteController clienteController;
     private List<ClienteModel> clientesCadastrados;
@@ -56,6 +57,11 @@ public class MenuCliente extends JFrame {
         btnAdicionarCliente.addActionListener(e -> abrirAdicionarCliente());
         btnAdicionarVeiculo.addActionListener(e -> abrirAdicionarVeiculo());
         historicoButton.addActionListener(e -> exibirHistorico());
+
+        rankingButton = new JButton("Ranking");
+        panelBotoes.add(rankingButton);
+        rankingButton.addActionListener(e -> exibirRankingClientes());
+
 
         setVisible(true);
     }
@@ -184,8 +190,13 @@ public class MenuCliente extends JFrame {
 
 
     // Método para atualizar a tabela com uma lista de tickets
+    // Método para atualizar a tabela com uma lista de tickets
     private void atualizarTabela(List<TicketModel> tickets, DefaultTableModel tableModel) {
         tableModel.setRowCount(0); // Limpa a tabela
+
+        // Formato para moeda brasileira (R$)
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+
         for (TicketModel ticket : tickets) {
             tableModel.addRow(new Object[]{
                     ticket.getIdTicket(),
@@ -193,11 +204,12 @@ public class MenuCliente extends JFrame {
                     ticket.getIdVaga(),
                     ticket.getEntrada(),
                     ticket.getSaida(),
-                    ticket.getCusto(),
-                    ticket.getPlaca(),
+                    ticket.getCusto() != null ? currencyFormatter.format(ticket.getCusto()) : "N/A", // Inclui R$ no custo
+                    ticket.getPlaca()
             });
         }
     }
+
 
     // Método para filtrar tickets por mês e ano
     private List<TicketModel> filtrarTickets(List<TicketModel> tickets, String mes, String ano) {
@@ -231,6 +243,48 @@ public class MenuCliente extends JFrame {
             default -> -1; // "Todos"
         };
     }
+
+    private void exibirRankingClientes() {
+        List<Object[]> ranking = clienteController.obterRankingClientes();
+
+        if (ranking.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum dado encontrado para o ranking.", "Informação", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Criação do JDialog
+        JDialog dialog = new JDialog(this, "Ranking de Clientes", true);
+        dialog.setSize(400, 300);
+        dialog.setLocationRelativeTo(this);
+
+        // Tabela para exibir o ranking
+        String[] colunas = {"Cliente", "Total Gasto"};
+        DefaultTableModel tableModel = new DefaultTableModel(colunas, 0);
+
+        // Formatação para moeda brasileira
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+
+        for (Object[] linha : ranking) {
+            tableModel.addRow(new Object[]{
+                    linha[0], // Nome do Cliente
+                    currencyFormatter.format(linha[1]) // Total Gasto formatado
+            });
+        }
+
+        JTable tabela = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(tabela);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        // Botão de Fechar
+        JButton btnFechar = new JButton("Fechar");
+        btnFechar.addActionListener(e -> dialog.dispose());
+        JPanel panelBotoes = new JPanel();
+        panelBotoes.add(btnFechar);
+        dialog.add(panelBotoes, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
 
     public static void main(String[] args) {
         new MenuCliente();
