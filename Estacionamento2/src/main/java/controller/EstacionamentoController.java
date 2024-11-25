@@ -1,5 +1,6 @@
 package controller;
 
+import dao.TicketDAO;
 import model.EstacionamentoModel;
 import model.VagaModel;
 import model.TicketEstacionamentoModel;
@@ -9,9 +10,22 @@ import java.time.LocalDateTime;
 
 public class EstacionamentoController {
     private EstacionamentoModel estacionamento;
+    private TicketDAO ticketDAO;
+
 
     public EstacionamentoController(EstacionamentoModel estacionamento) {
         this.estacionamento = estacionamento;
+        this.ticketDAO = new TicketDAO();
+
+    }
+
+    public double getValorMedioUtilizacao() {
+        return ticketDAO.calcularValorMedioUtilizacao(estacionamento.getId());
+    }
+
+    public double getArrecadacaoMensal(int mes, int ano) {
+        TicketDAO ticketDAO = new TicketDAO();
+        return ticketDAO.calcularArrecadacaoMensal(estacionamento.getId(), mes, ano);
     }
 
     public boolean estacionarVeiculo(VeiculoModel veiculo, String idVaga) {
@@ -58,5 +72,10 @@ public class EstacionamentoController {
 
         double valorTotal = estacionamento.getPrecoArrecadado();
         return valorTotal / totalTickets;
+    }
+
+
+    public double getArrecadacaoTotal() {
+        return ticketDAO.calcularArrecadacaoTotal(estacionamento.getId());
     }
 }
