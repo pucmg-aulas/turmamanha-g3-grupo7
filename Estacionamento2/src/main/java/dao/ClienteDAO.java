@@ -12,7 +12,6 @@ import java.util.List;
 
 public class ClienteDAO {
 
-    // Método para gerar um novo ID baseado no maior ID existente no banco
     public String gerarId() {
         String sql = "SELECT COALESCE(MAX(id_cliente), 0) + 1 AS novo_id FROM cliente";
         int novoId = 0;
@@ -32,7 +31,6 @@ public class ClienteDAO {
         return String.valueOf(novoId); // Retorna o próximo ID
     }
 
-    // Método para salvar um cliente no banco de dados
     public void salvarCliente(ClienteModel cliente) {
         String sql = "INSERT INTO cliente (nome) VALUES (?) RETURNING id_cliente";
 
@@ -43,7 +41,7 @@ public class ClienteDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                cliente.setId(String.valueOf(rs.getInt("id_cliente"))); // Define o ID gerado no cliente
+                cliente.setId(String.valueOf(rs.getInt("id_cliente")));
                 System.out.println("Cliente salvo com ID: " + cliente.getId());
             }
 
@@ -53,9 +51,6 @@ public class ClienteDAO {
         }
     }
 
-
-    // Método para salvar um veículo no banco de dados, vinculado a um cliente
-    // Método para adicionar um veículo ao cliente no banco de dados
     public void adicionarVeiculoAoCliente(String idCliente, VeiculoModel veiculo) {
         String sql = "INSERT INTO veiculo (placa, id_cliente) VALUES (?, ?)";
 
@@ -73,8 +68,6 @@ public class ClienteDAO {
         }
     }
 
-
-    // Método para listar todos os clientes e seus veículos
     public List<ClienteModel> listarTodos() {
         String sqlClientes = "SELECT * FROM cliente";
         String sqlVeiculos = "SELECT * FROM veiculo WHERE id_cliente = ?";
@@ -112,7 +105,6 @@ public class ClienteDAO {
         return clientes;
     }
 
-    // Método para buscar um cliente por ID
     public ClienteModel buscarPorId(String id) {
         String sqlCliente = "SELECT * FROM cliente WHERE id_cliente = ?";
         String sqlVeiculos = "SELECT * FROM veiculo WHERE id_cliente = ?";
@@ -151,7 +143,6 @@ public class ClienteDAO {
         return cliente;
     }
 
-    // Método para buscar um cliente por placa de veículo
     public ClienteModel buscarClientePorPlaca(String placa) {
         String sql = "SELECT c.* FROM cliente c JOIN veiculo v ON c.id_cliente = v.id_cliente WHERE v.placa = ?";
         ClienteModel cliente = null;
@@ -239,34 +230,67 @@ public class ClienteDAO {
         return tickets;
     }
 
-    public List<Object[]> calcularRankingClientes() {
-        String sql = """
-        SELECT c.nome, SUM(t.custo) AS total_gasto
+    public List<ClienteModel> obterRankingClientes(int mes, int ano) {
+        String baseSql = """
+        SELECT c.id_cliente, c.nome, SUM(t.custo) AS total_gasto
         FROM cliente c
         JOIN ticket t ON c.id_cliente = t.id_cliente
+    """;
+
+        StringBuilder sql = new StringBuilder(baseSql);
+
+        // Adicionar condições dinamicamente
+        if (mes > 0 || ano > 0) {
+            sql.append(" WHERE ");
+            if (mes > 0) {
+                sql.append("EXTRACT(MONTH FROM t.entrada) = ? ");
+            }
+            if (mes > 0 && ano > 0) {
+                sql.append("AND ");
+            }
+            if (ano > 0) {
+                sql.append("EXTRACT(YEAR FROM t.entrada) = ? ");
+            }
+        }
+
+        sql.append("""
         GROUP BY c.id_cliente, c.nome
         ORDER BY total_gasto DESC
         LIMIT 5
-    """;
+    """);
 
-        List<Object[]> ranking = new ArrayList<>();
+        List<ClienteModel> ranking = new ArrayList<>();
 
         try (Connection conn = BancoDados.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
-            while (rs.next()) {
-                String nomeCliente = rs.getString("nome");
-                BigDecimal totalGasto = rs.getBigDecimal("total_gasto");
-                ranking.add(new Object[]{nomeCliente, totalGasto});
+            int paramIndex = 1;
+
+            // Passar os parâmetros para o PreparedStatement
+            if (mes > 0) {
+                stmt.setInt(paramIndex++, mes);
+            }
+            if (ano > 0) {
+                stmt.setInt(paramIndex++, ano);
             }
 
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String id = String.valueOf(rs.getInt("id_cliente"));
+                String nome = rs.getString("nome");
+                BigDecimal totalGasto = rs.getBigDecimal("total_gasto");
+
+                ClienteModel cliente = new ClienteModel(nome, id);
+                cliente.setTotalGasto(totalGasto);
+                ranking.add(cliente);
+            }
         } catch (SQLException e) {
-            System.err.println("Erro ao calcular o ranking de clientes: " + e.getMessage());
+            System.err.println("Erro ao obter ranking de clientes: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return ranking;
     }
-
 
 }
