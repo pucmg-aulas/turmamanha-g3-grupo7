@@ -1,8 +1,11 @@
 package controller;
 
 import dao.EstacionamentoDAO;
-import model.*;
-import dao.*;
+import model.EstacionamentoModel;
+import model.VagaModel;
+import model.VagaPCDModel;
+import model.VagaVIPModel;
+import model.VagaPadraoModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +22,22 @@ public class ListarEstacionamentoController {
         return estacionamentoDAO.listarEstacionamentos();
     }
 
-    private VagaDAO vagaDAO;
 
-    public void adicionarEstacionamento(EstacionamentoModel estacionamento, int colunas, int vagasPorColuna) {
-        // Salvar estacionamento no banco e obter o ID gerado
+
+    public boolean adicionarEstacionamento(String nome, String endereco, String telefone, int colunas, int vagasPorColuna) {
+        EstacionamentoModel estacionamento = new EstacionamentoModel(nome, endereco, telefone);
+
         int idEstacionamento = estacionamentoDAO.salvarEstacionamento(estacionamento);
-        estacionamento.setId(idEstacionamento); // Atualizar o ID no modelo
+        estacionamento.setId(idEstacionamento);
 
-        // Gerar vagas
+        if (idEstacionamento > 0) {
+            gerarVagas(estacionamento, colunas, vagasPorColuna);
+            return true;
+        }
+        return false;
+    }
+
+    private void gerarVagas(EstacionamentoModel estacionamento, int colunas, int vagasPorColuna) {
         List<VagaModel> vagas = new ArrayList<>();
         int totalVagas = colunas * vagasPorColuna;
         int vagasPCD = totalVagas / 10; // 10% para PCD
@@ -36,7 +47,7 @@ public class ListarEstacionamentoController {
         for (int c = 0; c < colunas; c++) {
             char letraColuna = (char) ('A' + c);
             for (int v = 1; v <= vagasPorColuna; v++) {
-                String idVaga = letraColuna + String.format("%02d", v); // Gerar ID único
+                String idVaga = letraColuna + String.format("%02d", v);
 
                 VagaModel vaga;
                 if (vagaAtual < vagasPCD) {
@@ -48,50 +59,21 @@ public class ListarEstacionamentoController {
                 }
 
                 vaga.setOcupada(false);
-                vaga.setIdEstacionamento(idEstacionamento); // Associe ao ID do estacionamento correto
+                vaga.setIdEstacionamento(estacionamento.getId());
                 vagas.add(vaga);
 
                 vagaAtual++;
             }
         }
 
-        // Salvar vagas no banco
         estacionamentoDAO.salvarVagas(vagas);
     }
-
-
-
-    public void ocuparVaga(VagaModel vaga, VeiculoModel veiculo) {
-        if (!vaga.isOcupada()) {
-            vaga.ocuparVaga(veiculo);
-            vagaDAO.atualizarOcupacaoVaga(vaga.getId(), true);
-        } else {
-            System.out.println("A vaga já está ocupada.");
-        }
-    }
-
-    public void liberarVaga(VagaModel vaga) {
-        if (vaga.isOcupada()) {
-            vaga.liberarVaga();
-            vagaDAO.atualizarOcupacaoVaga(vaga.getId(), false);
-        } else {
-            System.out.println("A vaga já está liberada.");
-        }
-    }
-
-
 
     public boolean removerEstacionamento(int id) {
         return estacionamentoDAO.removerEstacionamentoPorId(id);
     }
 
     public EstacionamentoModel buscarEstacionamentoPorId(int id) {
-        List<EstacionamentoModel> estacionamentos = listarEstacionamentos();
-        for (EstacionamentoModel estacionamento : estacionamentos) {
-            if (estacionamento.getId() == id) {
-                return estacionamento;
-            }
-        }
-        return null;
+        return estacionamentoDAO.buscarEstacionamentoPorId(id);
     }
 }
