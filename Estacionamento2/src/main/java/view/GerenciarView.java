@@ -497,12 +497,15 @@ public class GerenciarView extends JFrame {
     private void adicionarCliente() {
         String nome = JOptionPane.showInputDialog(this, "Digite o nome do cliente:");
         if (nome != null && !nome.trim().isEmpty()) {
-            String id = clienteDAO.gerarId();
-            ClienteModel cliente = new ClienteModel(nome, id);
-            clienteDAO.salvarCliente(cliente);
+            // Cria o cliente sem definir o ID (o banco irá gerar automaticamente)
+            ClienteModel cliente = new ClienteModel(nome, null);
+            clienteDAO.salvarCliente(cliente); // O método salvarCliente define o ID gerado pelo banco
             carregarClientes(); // Atualiza a tabela de clientes
+        } else {
+            JOptionPane.showMessageDialog(this, "O nome do cliente não pode estar vazio.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void removerCliente() {
         int selectedRow = tabelaClientes.getSelectedRow();
