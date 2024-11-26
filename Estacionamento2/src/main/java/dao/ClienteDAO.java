@@ -12,24 +12,7 @@ import java.util.List;
 
 public class ClienteDAO {
 
-    public String gerarId() {
-        String sql = "SELECT COALESCE(MAX(id_cliente), 0) + 1 AS novo_id FROM cliente";
-        int novoId = 0;
 
-        try (Connection conn = BancoDados.getConexao();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            if (rs.next()) {
-                novoId = rs.getInt("novo_id");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Erro ao gerar ID: " + e.getMessage());
-        }
-
-        return String.valueOf(novoId); // Retorna o próximo ID
-    }
 
     public void salvarCliente(ClienteModel cliente) {
         String sql = "INSERT INTO cliente (nome) VALUES (?) RETURNING id_cliente";
@@ -38,20 +21,41 @@ public class ClienteDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, cliente.getNome());
-            ResultSet rs = stmt.executeQuery();
 
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                cliente.setId(String.valueOf(rs.getInt("id_cliente")));
-                System.out.println("Cliente salvo com ID: " + cliente.getId());
+                cliente.setId(String.valueOf(rs.getInt("id_cliente"))); // Define o ID gerado
             }
 
+            System.out.println("Cliente salvo com ID: " + cliente.getId());
         } catch (SQLException e) {
             System.err.println("Erro ao salvar cliente: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    public boolean existeIdCliente(String idCliente) {
+        String sql = "SELECT 1 FROM cliente WHERE id_cliente = ?";
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, Integer.parseInt(idCliente));
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar existência do cliente: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+
     public void adicionarVeiculoAoCliente(String idCliente, VeiculoModel veiculo) {
+        if (veiculoJaExiste(veiculo.getPlaca())) {
+            System.out.println("Veículo com a placa " + veiculo.getPlaca() + " já existe!");
+            return;
+        }
+
         String sql = "INSERT INTO veiculo (placa, id_cliente) VALUES (?, ?)";
 
         try (Connection conn = BancoDados.getConexao();
@@ -67,6 +71,22 @@ public class ClienteDAO {
             System.err.println("Erro ao adicionar veículo ao cliente: " + e.getMessage());
         }
     }
+
+    public boolean veiculoJaExiste(String placa) {
+        String sql = "SELECT 1 FROM veiculo WHERE placa = ?";
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, placa);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("Erro ao verificar existência do veículo: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
     public List<ClienteModel> listarTodos() {
         String sqlClientes = "SELECT * FROM cliente";
