@@ -58,26 +58,46 @@ public class EstacionamentoDAO {
     }
 
     public boolean removerEstacionamentoPorId(int id) {
-        String sql = "DELETE FROM estacionamento WHERE id_estacionamento = ?";
+        String sqlVagas = "DELETE FROM vaga WHERE id_estacionamento = ?"; // Remove dependências
+        String sqlEstacionamento = "DELETE FROM estacionamento WHERE id_estacionamento = ?";
         boolean removed = false;
 
-        try (Connection connection = BancoDados.getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (Connection connection = BancoDados.getConexao()) {
+            // Desabilita o autocommit para transação
+            connection.setAutoCommit(false);
 
-            stmt.setInt(1, id);
-            int rowsDeleted = stmt.executeUpdate();
-            removed = rowsDeleted > 0;
+            try (PreparedStatement stmtVagas = connection.prepareStatement(sqlVagas);
+                 PreparedStatement stmtEstacionamento = connection.prepareStatement(sqlEstacionamento)) {
 
-            if (removed) {
-                System.out.println("Estacionamento com ID " + id + " removido com sucesso.");
+                // Remove as vagas relacionadas ao estacionamento
+                stmtVagas.setInt(1, id);
+                stmtVagas.executeUpdate();
+
+                // Remove o estacionamento
+                stmtEstacionamento.setInt(1, id);
+                int rowsDeleted = stmtEstacionamento.executeUpdate();
+                removed = rowsDeleted > 0;
+
+                if (removed) {
+                    System.out.println("Estacionamento com ID " + id + " removido com sucesso.");
+                }
+
+                // Confirma a transação
+                connection.commit();
+
+            } catch (SQLException e) {
+                // Em caso de erro, desfaz a transação
+                connection.rollback();
+                System.err.println("Erro ao remover estacionamento e suas dependências: " + e.getMessage());
             }
 
         } catch (SQLException e) {
-            System.err.println("Erro ao remover estacionamento: " + e.getMessage());
+            System.err.println("Erro ao conectar ao banco de dados: " + e.getMessage());
         }
 
         return removed;
     }
+
 
     public void salvarVagas(List<VagaModel> vagas) {
         String sql = "INSERT INTO vaga (id_vaga, ocupada, id_estacionamento, tipo) VALUES (?, ?, ?, ?)";
