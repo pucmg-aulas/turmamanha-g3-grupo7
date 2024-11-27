@@ -360,5 +360,54 @@ public class ClienteDAO {
         return tickets;
     }
 
+    public List<ClienteModel> buscarPorNomeOuPlaca(String termo) {
+        String sql = """
+        SELECT DISTINCT c.id_cliente, c.nome, v.placa
+        FROM cliente c
+        LEFT JOIN veiculo v ON c.id_cliente = v.id_cliente
+        WHERE LOWER(c.nome) LIKE ? OR LOWER(v.placa) LIKE ?
+        """;
+
+        List<ClienteModel> clientes = new ArrayList<>();
+
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String termoBusca = "%" + termo.toLowerCase() + "%";
+            stmt.setString(1, termoBusca);
+            stmt.setString(2, termoBusca);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String id = String.valueOf(rs.getInt("id_cliente"));
+                    String nome = rs.getString("nome");
+                    String placa = rs.getString("placa");
+
+                    // Verifica se o cliente já está na lista
+                    ClienteModel cliente = clientes.stream()
+                            .filter(c -> c.getId().equals(id))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (cliente == null) {
+                        cliente = new ClienteModel(nome, id);
+                        clientes.add(cliente);
+                    }
+
+                    // Adiciona o veículo ao cliente, se houver
+                    if (placa != null) {
+                        cliente.adicionarVeiculo(new VeiculoModel(placa));
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar clientes por nome ou placa: " + e.getMessage());
+        }
+
+        return clientes;
+    }
+
+
 
 }
