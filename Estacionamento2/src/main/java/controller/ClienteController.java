@@ -54,5 +54,9 @@ public class ClienteController {
         return clienteDAO.filtrarTicketsSimples(idCliente, entrada, saida);
     }
 
+    public List<ClienteModel> buscarClientes(String termo) {
+        return clienteDAO.buscarPorNomeOuPlaca(termo);
+    }
+
 
 }
