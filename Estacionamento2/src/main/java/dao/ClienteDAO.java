@@ -48,8 +48,6 @@ public class ClienteDAO {
         }
     }
 
-
-
     public void adicionarVeiculoAoCliente(String idCliente, VeiculoModel veiculo) {
         if (veiculoJaExiste(veiculo.getPlaca())) {
             System.out.println("Veículo com a placa " + veiculo.getPlaca() + " já existe!");
@@ -85,8 +83,6 @@ public class ClienteDAO {
             return false;
         }
     }
-
-
 
     public List<ClienteModel> listarTodos() {
         String sqlClientes = "SELECT * FROM cliente";
@@ -312,5 +308,57 @@ public class ClienteDAO {
 
         return ranking;
     }
+
+    public List<TicketModel> filtrarTicketsSimples(String idCliente, String entrada, String saida) {
+        String baseSql = "SELECT * FROM ticket WHERE id_cliente = ?";
+        StringBuilder sql = new StringBuilder(baseSql);
+
+        // Adicionar condições dinamicamente
+        if (!entrada.isEmpty()) {
+            sql.append(" AND DATE(entrada) = ?");
+        }
+        if (!saida.isEmpty()) {
+            sql.append(" AND DATE(saida) = ?");
+        }
+
+        List<TicketModel> tickets = new ArrayList<>();
+
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            stmt.setInt(1, Integer.parseInt(idCliente));
+            int paramIndex = 2;
+
+            if (!entrada.isEmpty()) {
+                stmt.setDate(paramIndex++, Date.valueOf(entrada));
+            }
+            if (!saida.isEmpty()) {
+                stmt.setDate(paramIndex, Date.valueOf(saida));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                TicketModel ticket = new TicketModel(
+                        rs.getInt("id_ticket"),
+                        rs.getInt("id_estacionamento"),
+                        rs.getString("id_vaga"),
+                        rs.getInt("id_cliente"),
+                        rs.getTimestamp("entrada").toLocalDateTime(),
+                        rs.getTimestamp("saida") != null ? rs.getTimestamp("saida").toLocalDateTime() : null,
+                        rs.getBigDecimal("custo"),
+                        rs.getString("placa")
+                );
+                tickets.add(ticket);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao filtrar tickets: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return tickets;
+    }
+
 
 }
