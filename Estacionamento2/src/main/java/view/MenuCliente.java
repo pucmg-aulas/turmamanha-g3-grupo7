@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -129,13 +131,13 @@ public class MenuCliente extends JFrame {
         if (tickets.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nenhum histórico encontrado para este cliente.", "Informação", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            exibirDialogoHistorico(tickets);
+            exibirDialogoHistorico(tickets, clienteSelecionado.getId());
         }
     }
 
-    private void exibirDialogoHistorico(List<TicketModel> tickets) {
+    private void exibirDialogoHistorico(List<TicketModel> tickets, String idCliente) {
         JDialog dialog = new JDialog(this, "Histórico de Tickets", true);
-        dialog.setSize(600, 400);
+        dialog.setSize(800, 500);
         dialog.setLocationRelativeTo(this);
 
         String[] colunas = {"ID Ticket", "Estacionamento", "Vaga", "Entrada", "Saída", "Custo", "Placa"};
@@ -144,30 +146,39 @@ public class MenuCliente extends JFrame {
         JTable tabela = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(tabela);
 
-        // Combobox para o mês
-        JComboBox<String> comboMes = new JComboBox<>(new String[]{
-                "Todos", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-        });
-
-        // Campo de texto para o ano
-        JTextField txtAno = new JTextField(4);
+        // Campos de texto para os filtros
+        JTextField txtEntrada = new JTextField(10);
+        JTextField txtSaida = new JTextField(10);
 
         // Botão para aplicar o filtro
         JButton btnFiltrar = new JButton("Filtrar");
         btnFiltrar.addActionListener(e -> {
-            String mesSelecionado = (String) comboMes.getSelectedItem();
-            String anoSelecionado = txtAno.getText();
-            List<TicketModel> ticketsFiltrados = filtrarTickets(tickets, mesSelecionado, anoSelecionado);
+            String entrada = txtEntrada.getText().trim();
+            String saida = txtSaida.getText().trim();
+
+            // Validar entradas
+            if (!entrada.isEmpty() && !isDataValida(entrada)) {
+                JOptionPane.showMessageDialog(dialog, "Data de entrada inválida!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!saida.isEmpty() && !isDataValida(saida)) {
+                JOptionPane.showMessageDialog(dialog, "Data de saída inválida!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Delegar ao Controller a filtragem
+            List<TicketModel> ticketsFiltrados = clienteController.filtrarTickets(idCliente, entrada, saida);
+
+            // Atualizar a tabela
             atualizarTabela(ticketsFiltrados, tableModel);
         });
 
         // Painel superior com os filtros
-        JPanel panelFiltros = new JPanel();
-        panelFiltros.add(new JLabel("Mês:"));
-        panelFiltros.add(comboMes);
-        panelFiltros.add(new JLabel("Ano:"));
-        panelFiltros.add(txtAno);
+        JPanel panelFiltros = new JPanel(new GridLayout(1, 5, 5, 5));
+        panelFiltros.add(new JLabel("Entrada:"));
+        panelFiltros.add(txtEntrada);
+        panelFiltros.add(new JLabel("Saída:"));
+        panelFiltros.add(txtSaida);
         panelFiltros.add(btnFiltrar);
 
         dialog.add(panelFiltros, BorderLayout.NORTH);
@@ -179,12 +190,23 @@ public class MenuCliente extends JFrame {
         panelBotoes.add(btnFechar);
         dialog.add(panelBotoes, BorderLayout.SOUTH);
 
-        // Exibe todos os tickets inicialmente
         atualizarTabela(tickets, tableModel);
 
         dialog.setVisible(true);
     }
 
+    // Validação de data
+    private boolean isDataValida(String data) {
+        try {
+            LocalDate.parse(data); // Use LocalDate em vez de LocalDateTime
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+    // Atualização da tabela
     private void atualizarTabela(List<TicketModel> tickets, DefaultTableModel tableModel) {
         tableModel.setRowCount(0); // Limpa a tabela
 
@@ -198,23 +220,12 @@ public class MenuCliente extends JFrame {
                     ticket.getIdVaga(),
                     ticket.getEntrada(),
                     ticket.getSaida(),
-                    ticket.getCusto() != null ? currencyFormatter.format(ticket.getCusto()) : "N/A", // Inclui R$ no custo
+                    ticket.getCusto() != null ? currencyFormatter.format(ticket.getCusto()) : "N/A",
                     ticket.getPlaca()
             });
         }
     }
 
-    private List<TicketModel> filtrarTickets(List<TicketModel> tickets, String mes, String ano) {
-        return tickets.stream()
-                .filter(ticket -> {
-                    boolean mesValido = mes.equals("Todos") ||
-                            ticket.getEntrada().getMonthValue() == comboMesParaNumero(mes);
-                    boolean anoValido = ano.isEmpty() ||
-                            String.valueOf(ticket.getEntrada().getYear()).equals(ano);
-                    return mesValido && anoValido;
-                })
-                .toList();
-    }
 
     private int comboMesParaNumero(String mes) {
         return switch (mes) {
