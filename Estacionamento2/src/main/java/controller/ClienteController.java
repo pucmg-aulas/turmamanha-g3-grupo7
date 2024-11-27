@@ -5,6 +5,7 @@ import model.ClienteModel;
 import model.TicketModel;
 import model.VeiculoModel;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ClienteController {
@@ -48,5 +49,10 @@ public class ClienteController {
     public List<ClienteModel> listarRankingClientes(int mes, int ano) {
         return clienteDAO.obterRankingClientes(mes, ano);
     }
+
+    public List<TicketModel> filtrarTickets(String idCliente, String entrada, String saida) {
+        return clienteDAO.filtrarTicketsSimples(idCliente, entrada, saida);
+    }
+
 
 }
