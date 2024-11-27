@@ -16,6 +16,7 @@ import java.util.Locale;
 
 public class MenuCliente extends JFrame {
 
+    private JTextField barraDeBusca;
     private JButton btnAdicionarCliente;
     private JButton btnAdicionarVeiculo;
     private JList<String> listaClientes;
@@ -30,40 +31,48 @@ public class MenuCliente extends JFrame {
 
         setTitle("Menu de Cliente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
+        setSize(600, 400);
         setLayout(new BorderLayout());
 
-        JPanel panelBotoes = new JPanel();
-        panelBotoes.setLayout(new FlowLayout());
+        // Painel de busca
+        JPanel panelSuperior = new JPanel(new FlowLayout());
+        barraDeBusca = new JTextField(20);
+        JButton btnBuscar = new JButton("Buscar");
 
-        btnAdicionarCliente = new JButton("Adicionar Cliente");
-        btnAdicionarVeiculo = new JButton("Adicionar Veículo");
-        historicoButton = new JButton("Histórico");
+        panelSuperior.add(new JLabel("Buscar (Nome/Placa):"));
+        panelSuperior.add(barraDeBusca);
+        panelSuperior.add(btnBuscar);
 
-        panelBotoes.add(btnAdicionarCliente);
-        panelBotoes.add(historicoButton);
-        panelBotoes.add(btnAdicionarVeiculo);
-
-        add(panelBotoes, BorderLayout.NORTH);
+        add(panelSuperior, BorderLayout.NORTH);
 
         // Lista de clientes
         listaClientesModel = new DefaultListModel<>();
         listaClientes = new JList<>(listaClientesModel);
         JScrollPane scrollPane = new JScrollPane(listaClientes);
-
         add(scrollPane, BorderLayout.CENTER);
+
+        // Painel de botões na parte inferior
+        JPanel panelInferior = new JPanel(new FlowLayout());
+        btnAdicionarCliente = new JButton("Adicionar Cliente");
+        btnAdicionarVeiculo = new JButton("Adicionar Veículo");
+        historicoButton = new JButton("Histórico");
+        rankingButton = new JButton("Ranking");
+
+        panelInferior.add(btnAdicionarCliente);
+        panelInferior.add(btnAdicionarVeiculo);
+        panelInferior.add(historicoButton);
+        panelInferior.add(rankingButton);
+
+        add(panelInferior, BorderLayout.SOUTH);
 
         atualizarListaClientes();
 
         // Configurar ações dos botões
+        btnBuscar.addActionListener(e -> buscarClientes());
         btnAdicionarCliente.addActionListener(e -> abrirAdicionarCliente());
         btnAdicionarVeiculo.addActionListener(e -> abrirAdicionarVeiculo());
         historicoButton.addActionListener(e -> exibirHistorico());
-
-        rankingButton = new JButton("Ranking");
-        panelBotoes.add(rankingButton);
         rankingButton.addActionListener(e -> exibirRankingClientes());
-
 
         setVisible(true);
     }
@@ -256,34 +265,27 @@ public class MenuCliente extends JFrame {
             JTable tabela = new JTable(tableModel);
             JScrollPane scrollPane = new JScrollPane(tabela);
 
-            // Combobox para o mês
             JComboBox<String> comboMes = new JComboBox<>(new String[]{
                     "Todos", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
             });
 
-            // Campo de texto para o ano
             JTextField txtAno = new JTextField(4);
 
-            // Botão para aplicar o filtro
             JButton btnFiltrar = new JButton("Filtrar");
             btnFiltrar.addActionListener(e -> {
                 String mesSelecionado = (String) comboMes.getSelectedItem();
                 String anoSelecionado = txtAno.getText();
 
-                // Validar entradas
                 if (anoSelecionado.isEmpty() && !mesSelecionado.equals("Todos")) {
                     JOptionPane.showMessageDialog(dialog, "Por favor, insira um ano para aplicar o filtro.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                // Obter o mês como número
                 int mesNumero = mesSelecionado.equals("Todos") ? -1 : comboMesParaNumero(mesSelecionado);
 
-                // Chamar o controlador para buscar o ranking filtrado
                 List<ClienteModel> ranking = clienteController.listarRankingClientes(mesNumero, anoSelecionado.isEmpty() ? -1 : Integer.parseInt(anoSelecionado));
 
-                // Atualizar a tabela com o ranking filtrado
                 atualizarTabelaRanking(ranking, tableModel);
             });
 
@@ -325,6 +327,31 @@ public class MenuCliente extends JFrame {
             });
         }
     }
+
+    private void buscarClientes() {
+        String termo = barraDeBusca.getText().trim();
+        if (termo.isEmpty()) {
+            atualizarListaClientes();
+            return;
+        }
+
+        List<ClienteModel> clientesFiltrados = clienteController.buscarClientes(termo);
+        listaClientesModel.clear();
+        for (ClienteModel cliente : clientesFiltrados) {
+            StringBuilder clienteInfo = new StringBuilder(cliente.getId() + " - " + cliente.getNome());
+
+            // Adicionar veículos ao cliente
+            if (!cliente.getVeiculos().isEmpty()) {
+                clienteInfo.append(" - Veículos: ");
+                cliente.getVeiculos().forEach(veiculo -> clienteInfo.append(veiculo.getPlaca()).append(", "));
+                // Remove a última vírgula
+                clienteInfo.setLength(clienteInfo.length() - 2);
+            }
+
+            listaClientesModel.addElement(clienteInfo.toString());
+        }
+    }
+
 
     public static void main(String[] args) {
         new MenuCliente();
