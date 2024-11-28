@@ -159,4 +159,9 @@ public class EstacionamentoController {
                 .orElse(null);
     }
 
+
+    public List<TicketModel> getTicketsEncerrados() {
+        return ticketDAO.buscarTicketsFechados(estacionamento.getId());
+    }
+
 }
