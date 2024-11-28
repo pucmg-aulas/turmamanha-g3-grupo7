@@ -281,7 +281,12 @@ public class GerenciarView extends JFrame {
             ClienteModel cliente = clientes.get(i);
             dadosClientes[i][0] = cliente.getId();
             dadosClientes[i][1] = cliente.getNome();
-            dadosClientes[i][2] = cliente.getVeiculos().isEmpty() ? "" : cliente.getVeiculos().get(0).getPlaca();
+            dadosClientes[i][2] = cliente.getVeiculos().isEmpty()
+                    ? ""
+                    : cliente.getVeiculos().stream()
+                    .map(VeiculoModel::getPlaca)
+                    .reduce((placa1, placa2) -> placa1 + ", " + placa2)
+                    .orElse("");
         }
 
         tabelaClientes.setModel(new javax.swing.table.DefaultTableModel(
