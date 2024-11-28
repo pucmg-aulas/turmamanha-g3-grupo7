@@ -110,13 +110,19 @@ public class EstacionamentoDAO {
                 stmt.setInt(3, vaga.getIdEstacionamento());
                 stmt.setString(4, vaga.getTipo());
                 stmt.addBatch();
+
+                // Log para verificar cada vaga que está sendo salva
+                System.out.printf("Salvando vaga: ID=%s, Ocupada=%b, Estacionamento=%d, Tipo=%s%n",
+                        vaga.getId(), vaga.isOcupada(), vaga.getIdEstacionamento(), vaga.getTipo());
             }
 
-            stmt.executeBatch();
+            int[] resultados = stmt.executeBatch();
+            System.out.printf("Batch executado. Total de registros salvos: %d%n", resultados.length);
         } catch (SQLException e) {
             System.err.println("Erro ao salvar vagas: " + e.getMessage());
         }
     }
+
 
     public EstacionamentoModel buscarEstacionamentoPorId(int id) {
         String sql = "SELECT id_estacionamento, nome, endereco, telefone FROM estacionamento WHERE id_estacionamento = ?";
@@ -165,6 +171,9 @@ public class EstacionamentoDAO {
                         case "VIP":
                             vaga = new VagaVIPModel(idVaga);
                             break;
+                        case "Idoso":
+                            vaga = new VagaIdosoModel(idVaga);
+                            break;
                         default:
                             vaga = new VagaPadraoModel(idVaga);
                     }
@@ -180,6 +189,7 @@ public class EstacionamentoDAO {
 
         return vagas;
     }
+
 
     public static List<Object[]> buscarRankingEstacionamentos() {
         List<Object[]> ranking = new ArrayList<>();
