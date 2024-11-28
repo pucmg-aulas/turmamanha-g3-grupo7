@@ -21,8 +21,8 @@ public class GerenciarView extends JFrame {
     // Painéis para cada aba
     private JPanel dadosGeraisPanel;
     private JPanel vagasPanel;
-    private JPanel veiculosPanel;
     private JPanel ticketsPanel;
+    private JPanel ticketsEncerradosPanel;
     private JPanel clientesPanel;
 
     // Botões da aba de Vagas
@@ -46,6 +46,8 @@ public class GerenciarView extends JFrame {
     private JTable tabelaVagas;
     private JTable tabelaTickets;
     private JTable tabelaClientes;
+    private JTable tabelaTicketsEncerrados;
+
 
     public GerenciarView(EstacionamentoModel estacionamento) {
         this.estacionamento = estacionamento;
@@ -73,12 +75,14 @@ public class GerenciarView extends JFrame {
         inicializarDadosGerais();
         inicializarVagas();
         inicializarTickets();
+        inicializarTicketsEncerrados();
         inicializarClientes();
 
         // Adiciona as abas
         tabbedPane.addTab("Dados Gerais", dadosGeraisPanel);
         tabbedPane.addTab("Vagas", vagasPanel);
         tabbedPane.addTab("Tickets Ativos", ticketsPanel);
+        tabbedPane.addTab("Tickets Encerrados", ticketsEncerradosPanel);
         tabbedPane.addTab("Clientes", clientesPanel);
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -223,6 +227,21 @@ public class GerenciarView extends JFrame {
 
         ticketsPanel.add(scrollPane, BorderLayout.CENTER);
     }
+
+    private void inicializarTicketsEncerrados() {
+        ticketsEncerradosPanel = new JPanel(new BorderLayout());
+        String[] colunas = { "ID Vaga", "Placa", "Entrada", "Saída", "Valor" };
+        tabelaTicketsEncerrados = new JTable(new Object[0][5], colunas);
+        JScrollPane scrollPane = new JScrollPane(tabelaTicketsEncerrados);
+        ticketsEncerradosPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Adicionar aba ao painel
+        tabbedPane.addTab("Tickets Encerrados", ticketsEncerradosPanel);
+
+        // Carregar os dados dos tickets encerrados ao inicializar
+        carregarTicketsEncerrados();
+    }
+
 
     private void inicializarClientes() {
         clientesPanel = new JPanel(new BorderLayout());
@@ -385,6 +404,27 @@ public class GerenciarView extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
         atualizarTabelaVagas(); // Aqui você atualiza a tabela após estacionar
+    }
+
+    private void carregarTicketsEncerrados() {
+        // Obter os tickets encerrados do Controller
+        List<TicketModel> ticketsEncerrados = estacionamentoController.getTicketsEncerrados();
+
+        Object[][] dadosTickets = new Object[ticketsEncerrados.size()][5];
+        for (int i = 0; i < ticketsEncerrados.size(); i++) {
+            TicketModel ticket = ticketsEncerrados.get(i);
+            dadosTickets[i][0] = ticket.getIdVaga();  // ID da Vaga
+            dadosTickets[i][1] = ticket.getPlaca();   // Placa do veículo
+            dadosTickets[i][2] = ticket.getEntrada(); // Data de entrada
+            dadosTickets[i][3] = ticket.getSaida();   // Data de saída
+            dadosTickets[i][4] = String.format("R$ %.2f", ticket.getCusto()); // Valor do ticket
+        }
+
+        // Atualizar o modelo da tabela com os novos dados
+        tabelaTicketsEncerrados.setModel(new javax.swing.table.DefaultTableModel(
+                dadosTickets,
+                new String[]{ "ID Vaga", "Placa", "Entrada", "Saída", "Valor" }
+        ));
     }
 
 }
