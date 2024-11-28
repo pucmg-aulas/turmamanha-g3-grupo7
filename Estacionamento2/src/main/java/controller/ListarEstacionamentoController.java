@@ -1,11 +1,7 @@
 package controller;
 
 import dao.EstacionamentoDAO;
-import model.EstacionamentoModel;
-import model.VagaModel;
-import model.VagaPCDModel;
-import model.VagaVIPModel;
-import model.VagaPadraoModel;
+import model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +35,14 @@ public class ListarEstacionamentoController {
     private void gerarVagas(EstacionamentoModel estacionamento, int colunas, int vagasPorColuna) {
         List<VagaModel> vagas = new ArrayList<>();
         int totalVagas = colunas * vagasPorColuna;
-        int vagasPCD = totalVagas / 10; // 10% para PCD
-        int vagasVIP = totalVagas / 20; // 5% para VIP
+
+        // Define a proporção de vagas por tipo
+        int vagasPCD = totalVagas / 5;  // 20% das vagas para PCD
+        int vagasVIP = totalVagas / 10;  // 10% das vagas para VIP
+        int vagasIdoso = totalVagas / 5; // 20% das vagas para Idoso
 
         int vagaAtual = 0;
+
         for (int c = 0; c < colunas; c++) {
             char letraColuna = (char) ('A' + c);
             for (int v = 1; v <= vagasPorColuna; v++) {
@@ -51,7 +51,9 @@ public class ListarEstacionamentoController {
                 VagaModel vaga;
                 if (vagaAtual < vagasPCD) {
                     vaga = new VagaPCDModel(idVaga);
-                } else if (vagaAtual < vagasPCD + vagasVIP) {
+                } else if (vagaAtual < vagasPCD + vagasIdoso) {
+                    vaga = new VagaIdosoModel(idVaga); // Adiciona vagas Idoso
+                } else if (vagaAtual < vagasPCD + vagasIdoso + vagasVIP) {
                     vaga = new VagaVIPModel(idVaga);
                 } else {
                     vaga = new VagaPadraoModel(idVaga);
@@ -67,6 +69,7 @@ public class ListarEstacionamentoController {
 
         estacionamentoDAO.salvarVagas(vagas);
     }
+
 
     public boolean removerEstacionamento(int id) {
         return estacionamentoDAO.removerEstacionamentoPorId(id);
