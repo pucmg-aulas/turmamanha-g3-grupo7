@@ -37,11 +37,14 @@ public class ListarEstacionamentoController {
         int totalVagas = colunas * vagasPorColuna;
 
         // Define a proporção de vagas por tipo
-        int vagasPCD = totalVagas / 5;  // 20% das vagas para PCD
-        int vagasVIP = totalVagas / 10;  // 10% das vagas para VIP
-        int vagasIdoso = totalVagas / 5; // 20% das vagas para Idoso
+        int vagasPCD = totalVagas / 5;  // 20% para PCD
+        int vagasIdoso = totalVagas / 5; // 20% para Idoso
+        int vagasVIP = totalVagas / 10;  // 10% para VIP
+        int vagasPadrao = totalVagas - (vagasPCD + vagasIdoso + vagasVIP); // Restante para Padrão
 
-        int vagaAtual = 0;
+        int vagasCriadasPCD = 0;
+        int vagasCriadasIdoso = 0;
+        int vagasCriadasVIP = 0;
 
         for (int c = 0; c < colunas; c++) {
             char letraColuna = (char) ('A' + c);
@@ -49,12 +52,15 @@ public class ListarEstacionamentoController {
                 String idVaga = letraColuna + String.format("%02d", v);
 
                 VagaModel vaga;
-                if (vagaAtual < vagasPCD) {
+                if (vagasCriadasPCD < vagasPCD) {
                     vaga = new VagaPCDModel(idVaga);
-                } else if (vagaAtual < vagasPCD + vagasIdoso) {
-                    vaga = new VagaIdosoModel(idVaga); // Adiciona vagas Idoso
-                } else if (vagaAtual < vagasPCD + vagasIdoso + vagasVIP) {
+                    vagasCriadasPCD++;
+                } else if (vagasCriadasIdoso < vagasIdoso) {
+                    vaga = new VagaIdosoModel(idVaga);
+                    vagasCriadasIdoso++;
+                } else if (vagasCriadasVIP < vagasVIP) {
                     vaga = new VagaVIPModel(idVaga);
+                    vagasCriadasVIP++;
                 } else {
                     vaga = new VagaPadraoModel(idVaga);
                 }
@@ -62,8 +68,6 @@ public class ListarEstacionamentoController {
                 vaga.setOcupada(false);
                 vaga.setIdEstacionamento(estacionamento.getId());
                 vagas.add(vaga);
-
-                vagaAtual++;
             }
         }
 
