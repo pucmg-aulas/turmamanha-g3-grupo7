@@ -1,6 +1,7 @@
 package controller;
 
 import dao.ClienteDAO;
+import dao.ClienteDAOException;
 import model.ClienteModel;
 import model.TicketModel;
 import model.VeiculoModel;
@@ -15,43 +16,43 @@ public class ClienteController {
         this.clienteDAO = new ClienteDAO();
     }
 
-    public ClienteModel adicionarCliente(String nome) {
+    public ClienteModel adicionarCliente(String nome) throws ClienteDAOException {
         ClienteModel cliente = new ClienteModel(nome, null); // O ID será gerado pelo DAO
         clienteDAO.salvarCliente(cliente);
         return cliente;
     }
 
-    public void adicionarVeiculoAoCliente(String idCliente, String placa) {
+    public void adicionarVeiculoAoCliente(String idCliente, String placa) throws ClienteDAOException {
         VeiculoModel veiculo = new VeiculoModel(placa);
         clienteDAO.adicionarVeiculoAoCliente(idCliente, veiculo);
     }
 
-    public List<ClienteModel> listarTodosClientes() {
+    public List<ClienteModel> listarTodosClientes() throws ClienteDAOException {
         return clienteDAO.listarTodos();
     }
 
 
-    public ClienteModel buscarClientePorId(String id) {
+    public ClienteModel buscarClientePorId(String id) throws ClienteDAOException {
         return clienteDAO.buscarPorId(id);
     }
 
-    public ClienteModel buscarClientePorPlaca(String placa) {
+    public ClienteModel buscarClientePorPlaca(String placa) throws ClienteDAOException {
         return clienteDAO.buscarClientePorPlaca(placa);
     }
 
-    public List<TicketModel> listarTicketsDoCliente(String idCliente) {
+    public List<TicketModel> listarTicketsDoCliente(String idCliente) throws ClienteDAOException {
         return clienteDAO.listarTicketsDoCliente(idCliente);
     }
 
-    public List<ClienteModel> listarRankingClientes(int mes, int ano) {
+    public List<ClienteModel> listarRankingClientes(int mes, int ano) throws ClienteDAOException {
         return clienteDAO.obterRankingClientes(mes, ano);
     }
 
-    public List<TicketModel> filtrarTickets(String idCliente, String entrada, String saida) {
+    public List<TicketModel> filtrarTickets(String idCliente, String entrada, String saida) throws ClienteDAOException {
         return clienteDAO.filtrarTicketsSimples(idCliente, entrada, saida);
     }
 
-    public List<ClienteModel> buscarClientes(String termo) {
+    public List<ClienteModel> buscarClientes(String termo) throws ClienteDAOException {
         return clienteDAO.buscarPorNomeOuPlaca(termo);
     }
 

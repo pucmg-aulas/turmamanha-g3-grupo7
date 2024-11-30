@@ -1,6 +1,7 @@
 package controller;
 
 import dao.ClienteDAO;
+import dao.ClienteDAOException;
 import dao.TicketDAO;
 import dao.VagaDAO;
 import model.*;
@@ -38,7 +39,7 @@ public class EstacionamentoController {
         return ticketDAO.calcularArrecadacaoTotal(estacionamento.getId());
     }
 
-    public boolean estacionarVeiculo(String idVaga, String placa) {
+    public boolean estacionarVeiculo(String idVaga, String placa) throws ClienteDAOException {
         // Verificar se a vaga está disponível
         VagaModel vagaSelecionada = buscarVagaPorId(idVaga);
 
