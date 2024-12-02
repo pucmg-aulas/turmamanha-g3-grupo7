@@ -4,11 +4,10 @@ import controller.EstacionamentoController;
 import model.*;
 import dao.ClienteDAO;
 import dao.ClienteDAOException;
+import dao.VagaDAOException;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -26,11 +25,6 @@ public class GerenciarView extends JFrame {
     private JPanel ticketsPanel;
     private JPanel ticketsEncerradosPanel;
     private JPanel clientesPanel;
-
-    // Botões da aba de Vagas
-    private JButton editarTipoVagaButton;
-    private JButton gerarVagasButton;
-    private JButton fecharVagasButton;
 
     // Campos para dados gerais
     private JTextField txtId;
@@ -196,7 +190,6 @@ public class GerenciarView extends JFrame {
 
         // Botões
         JPanel botoesVagas = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRemoverVaga = new JButton("Remover Vaga");
         JButton btnEstacionar = new JButton("Estacionar");
         JButton btnLiberarVaga = new JButton("Liberar Vaga"); // Corrigido aqui
 
@@ -204,11 +197,18 @@ public class GerenciarView extends JFrame {
             try {
                 estacionarVeiculo();
             } catch (ClienteDAOException e1) {
-                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } catch (VagaDAOException e1) {
                 e1.printStackTrace();
             }
         });
-        btnLiberarVaga.addActionListener(e -> liberarVaga()); // Listener para liberar vaga
+        btnLiberarVaga.addActionListener(e -> {
+            try {
+                liberarVaga();
+            } catch (VagaDAOException e1) {
+                e1.printStackTrace();
+            }
+        }); // Listener para liberar vaga
 
         // Adicionar os botões ao painel
         botoesVagas.add(btnEstacionar);
@@ -331,7 +331,7 @@ public class GerenciarView extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void estacionarVeiculo() throws ClienteDAOException {
+    private void estacionarVeiculo() throws ClienteDAOException, VagaDAOException {
         int selectedRow = tabelaVagas.getSelectedRow(); // Recupera a linha selecionada
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Selecione uma vaga para estacionar.");
@@ -383,7 +383,7 @@ public class GerenciarView extends JFrame {
         ));
     }
 
-    private void liberarVaga() {
+    private void liberarVaga() throws VagaDAOException {
         int selectedRow = tabelaVagas.getSelectedRow(); // Recupera a linha selecionada
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Selecione uma vaga para liberar.");
