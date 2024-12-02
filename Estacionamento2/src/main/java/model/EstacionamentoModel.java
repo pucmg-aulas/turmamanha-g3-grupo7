@@ -14,15 +14,12 @@ public class EstacionamentoModel {
     private String endereco;
     private String telefone;
     private List<VagaModel> vagas;
-    private List<VeiculoModel> veiculosEstacionados;
-    private double precoArrecadado;
 
     public EstacionamentoModel(String nome, String endereco, String telefone) {
         this.nome = nome;
         this.endereco = endereco;
         this.telefone = telefone;
         this.vagas = new ArrayList<>();
-        this.veiculosEstacionados = new ArrayList<>();
     }
 
     public EstacionamentoModel(int id, String nome, String endereco, String telefone) {
@@ -31,7 +28,6 @@ public class EstacionamentoModel {
         this.endereco = endereco;
         this.telefone = telefone;
         this.vagas = new ArrayList<>();
-        this.veiculosEstacionados = new ArrayList<>();
     }
 
     public void carregarVagas() {
@@ -48,18 +44,6 @@ public class EstacionamentoModel {
         this.id = id;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-
     public String getNome() {
         return nome;
     }
@@ -74,31 +58,5 @@ public class EstacionamentoModel {
 
     public List<VagaModel> getVagas() {
         return vagas;
-    }
-
-    public void adicionarVaga(VagaModel vaga) {
-        this.vagas.add(vaga);
-    }
-
-    public void adicionarVeiculoEstacionado(VeiculoModel veiculo) {
-        veiculosEstacionados.add(veiculo);
-    }
-
-    public void removerVeiculoEstacionado(VeiculoModel veiculo) {
-        veiculosEstacionados.remove(veiculo);
-    }
-
-    public List<VeiculoModel> getVeiculosEstacionados() {
-        return veiculosEstacionados;
-    }
-
-
-
-    public double getPrecoArrecadado() {
-        return precoArrecadado;
-    }
-
-    public void incrementarPrecoArrecadado(double valor) {
-        this.precoArrecadado += valor;
     }
 }
