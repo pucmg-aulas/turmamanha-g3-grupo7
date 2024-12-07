@@ -1,8 +1,10 @@
 package controller;
 
 import dao.ClienteDAO;
+import dao.ClienteDAOException;
 import dao.TicketDAO;
 import dao.VagaDAO;
+import dao.VagaDAOException;
 import model.*;
 
 import java.math.BigDecimal;
@@ -13,7 +15,6 @@ import java.util.List;
 public class EstacionamentoController {
     private EstacionamentoModel estacionamento;
     private TicketDAO ticketDAO;
-
 
     public EstacionamentoController(EstacionamentoModel estacionamento) {
         this.estacionamento = estacionamento;
@@ -38,7 +39,7 @@ public class EstacionamentoController {
         return ticketDAO.calcularArrecadacaoTotal(estacionamento.getId());
     }
 
-    public boolean estacionarVeiculo(String idVaga, String placa) {
+    public boolean estacionarVeiculo(String idVaga, String placa) throws ClienteDAOException, VagaDAOException {
         // Verificar se a vaga está disponível
         VagaModel vagaSelecionada = buscarVagaPorId(idVaga);
 
@@ -73,16 +74,14 @@ public class EstacionamentoController {
                 LocalDateTime.now(),
                 null, // Sem horário de saída
                 BigDecimal.ZERO, // Custo será calculado no momento da saída
-                placa
-        );
+                placa);
 
         // Salvar o ticket no banco
         boolean salvo = ticketDAO.salvarTicket(ticket);
 
         if (salvo) {
             // Atualizar o status da vaga para "ocupada"
-            VagaDAO vagaDAO = new VagaDAO();
-            boolean vagaAtualizada = vagaDAO.atualizarStatusVaga(idVaga, true, estacionamento.getId());
+            boolean vagaAtualizada = VagaDAO.atualizarStatusVaga(idVaga, true, estacionamento.getId());
 
             if (vagaAtualizada) {
                 System.out.println("Veículo estacionado com sucesso! Ticket salvo.");
@@ -105,7 +104,7 @@ public class EstacionamentoController {
         return ticketDAO.buscarVeiculoPorVaga(idVaga, estacionamento.getId());
     }
 
-    public Double liberarVaga(String idVaga) {
+    public Double liberarVaga(String idVaga) throws VagaDAOException {
         VagaModel vagaSelecionada = buscarVagaPorId(idVaga);
 
         if (vagaSelecionada == null || !vagaSelecionada.isOcupada()) {
@@ -132,8 +131,7 @@ public class EstacionamentoController {
             vagaSelecionada.liberarVaga(); // Atualizar o estado da vaga no modelo
 
             // Persistir a alteração no banco de dados
-            VagaDAO vagaDAO = new VagaDAO();
-            boolean vagaAtualizada = vagaDAO.atualizarStatusVaga(idVaga, false, estacionamento.getId());
+            boolean vagaAtualizada = VagaDAO.atualizarStatusVaga(idVaga, false, estacionamento.getId());
 
             if (!vagaAtualizada) {
                 System.err.println("Erro ao atualizar o status da vaga no banco de dados.");
@@ -158,7 +156,6 @@ public class EstacionamentoController {
                 .findFirst()
                 .orElse(null);
     }
-
 
     public List<TicketModel> getTicketsEncerrados() {
         return ticketDAO.buscarTicketsFechados(estacionamento.getId());

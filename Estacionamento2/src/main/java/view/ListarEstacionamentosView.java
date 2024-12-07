@@ -1,6 +1,8 @@
 package view;
 
 import controller.ListarEstacionamentoController;
+import dao.ClienteDAOException;
+import dao.EstacionamentoDAOException;
 import model.EstacionamentoModel;
 
 import javax.swing.*;
@@ -23,10 +25,9 @@ public class ListarEstacionamentosView extends JFrame {
     private JButton rankingUtilizacaoButton;
     private JButton menuClienteButton; // Adicione esta linha junto com os outros botões
 
-
     private ListarEstacionamentoController controller;
 
-    public ListarEstacionamentosView(ListarEstacionamentoController controller) {
+    public ListarEstacionamentosView(ListarEstacionamentoController controller) throws EstacionamentoDAOException {
         this.controller = controller;
 
         setTitle("Lista de Estacionamentos");
@@ -43,7 +44,7 @@ public class ListarEstacionamentosView extends JFrame {
         panel = new JPanel(new BorderLayout());
         setContentPane(panel);
 
-        tabelaModelo = new DefaultTableModel(new Object[]{"ID", "Nome", "Endereço", "Telefone"}, 0) {
+        tabelaModelo = new DefaultTableModel(new Object[] { "ID", "Nome", "Endereço", "Telefone" }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -69,27 +70,53 @@ public class ListarEstacionamentosView extends JFrame {
         botoesPanel.add(rankingFaturamentoButton);
         botoesPanel.add(rankingUtilizacaoButton);
         botoesPanel.add(fecharButton);
-        
 
         panel.add(botoesPanel, BorderLayout.SOUTH);
     }
 
     private void adicionarEventos() {
-        gerenciarEstacionamentoButton.addActionListener(e -> gerenciarEstacionamentoSelecionado());
-        adicionarButton.addActionListener(e -> adicionarEstacionamento());
-        removerButton.addActionListener(e -> removerEstacionamento());
+        gerenciarEstacionamentoButton.addActionListener(e -> {
+            try {
+                gerenciarEstacionamentoSelecionado();
+            } catch (EstacionamentoDAOException e1) {
+                e1.printStackTrace();
+            } catch (ClienteDAOException e1) {
+                e1.printStackTrace();
+            }
+        });
+        adicionarButton.addActionListener(e -> {
+            try {
+                adicionarEstacionamento();
+            } catch (EstacionamentoDAOException e1) {
+                e1.printStackTrace();
+            }
+        });
+        removerButton.addActionListener(e -> {
+            try {
+                removerEstacionamento();
+            } catch (EstacionamentoDAOException e1) {
+                e1.printStackTrace();
+            }
+        });
         fecharButton.addActionListener(e -> dispose());
         rankingFaturamentoButton.addActionListener(e -> exibirRankingFaturamento());
         rankingUtilizacaoButton.addActionListener(e -> exibirRankingUtilizacao());
-        menuClienteButton.addActionListener(e -> abrirMenuCliente());
+        menuClienteButton.addActionListener(e -> {
+            try {
+                abrirMenuCliente();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
     }
 
-    private void carregarEstacionamentosNaTabela() {
+    private void carregarEstacionamentosNaTabela() throws EstacionamentoDAOException {
         tabelaModelo.setRowCount(0);
         List<EstacionamentoModel> estacionamentos = controller.listarEstacionamentos();
 
         for (EstacionamentoModel estacionamento : estacionamentos) {
-            tabelaModelo.addRow(new Object[]{
+            tabelaModelo.addRow(new Object[] {
                     estacionamento.getId(),
                     estacionamento.getNome(),
                     estacionamento.getEndereco(),
@@ -98,7 +125,7 @@ public class ListarEstacionamentosView extends JFrame {
         }
     }
 
-    private void adicionarEstacionamento() {
+    private void adicionarEstacionamento() throws EstacionamentoDAOException {
         String nome = JOptionPane.showInputDialog(this, "Digite o nome do estacionamento:");
         String endereco = JOptionPane.showInputDialog(this, "Digite o endereço:");
         String telefone = JOptionPane.showInputDialog(this, "Digite o telefone:");
@@ -114,14 +141,15 @@ public class ListarEstacionamentosView extends JFrame {
                 carregarEstacionamentosNaTabela();
                 JOptionPane.showMessageDialog(this, "Estacionamento adicionado com sucesso!");
             } else {
-                JOptionPane.showMessageDialog(this, "Erro ao adicionar estacionamento.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erro ao adicionar estacionamento.", "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Número inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void removerEstacionamento() {
+    private void removerEstacionamento() throws EstacionamentoDAOException {
         int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
         if (linhaSelecionada == -1) {
             JOptionPane.showMessageDialog(this, "Selecione um estacionamento.");
@@ -139,7 +167,7 @@ public class ListarEstacionamentosView extends JFrame {
         }
     }
 
-    private void gerenciarEstacionamentoSelecionado() {
+    private void gerenciarEstacionamentoSelecionado() throws EstacionamentoDAOException, ClienteDAOException {
         int linhaSelecionada = tabelaEstacionamentos.getSelectedRow();
         if (linhaSelecionada == -1) {
             JOptionPane.showMessageDialog(this, "Selecione um estacionamento.");
@@ -168,7 +196,7 @@ public class ListarEstacionamentosView extends JFrame {
         rankingFrame.add(panel);
 
         // Tabela para exibir o ranking
-        String[] colunas = {"Posição", "Nome", "Total Faturado"};
+        String[] colunas = { "Posição", "Nome", "Total Faturado" };
         DefaultTableModel rankingModel = new DefaultTableModel(colunas, 0);
         JTable tabelaRanking = new JTable(rankingModel);
         panel.add(new JScrollPane(tabelaRanking), BorderLayout.CENTER);
@@ -179,7 +207,7 @@ public class ListarEstacionamentosView extends JFrame {
         // Adiciona os dados do ranking na tabela
         for (int i = 0; i < ranking.size(); i++) {
             Object[] linha = ranking.get(i);
-            rankingModel.addRow(new Object[]{i + 1, linha[0], String.format("R$ %.2f", linha[1])});
+            rankingModel.addRow(new Object[] { i + 1, linha[0], String.format("R$ %.2f", linha[1]) });
         }
 
         // Botão para fechar a janela
@@ -226,12 +254,16 @@ public class ListarEstacionamentosView extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             ListarEstacionamentoController controller = new ListarEstacionamentoController();
-            ListarEstacionamentosView view = new ListarEstacionamentosView(controller);
-            view.setVisible(true);
+            try {
+                ListarEstacionamentosView view = new ListarEstacionamentosView(controller);
+                view.setVisible(true);
+            } catch (EstacionamentoDAOException e) {
+                e.printStackTrace();
+            }
         });
     }
 
-    private void abrirMenuCliente() {
+    private void abrirMenuCliente() throws ClienteDAOException {
         MenuCliente menuCliente = new MenuCliente();
         menuCliente.setVisible(true);
     }

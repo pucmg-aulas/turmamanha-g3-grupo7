@@ -1,6 +1,7 @@
 package view;
 
 import controller.ClienteController;
+import dao.ClienteDAOException;
 import model.ClienteModel;
 import model.TicketModel;
 import model.VeiculoModel;
@@ -26,7 +27,7 @@ public class MenuCliente extends JFrame {
     private ClienteController clienteController;
     private List<ClienteModel> clientesCadastrados;
 
-    public MenuCliente() {
+    public MenuCliente() throws ClienteDAOException {
         clienteController = new ClienteController();
 
         setTitle("Menu de Cliente");
@@ -68,16 +69,51 @@ public class MenuCliente extends JFrame {
         atualizarListaClientes();
 
         // Configurar ações dos botões
-        btnBuscar.addActionListener(e -> buscarClientes());
-        btnAdicionarCliente.addActionListener(e -> abrirAdicionarCliente());
-        btnAdicionarVeiculo.addActionListener(e -> abrirAdicionarVeiculo());
-        historicoButton.addActionListener(e -> exibirHistorico());
-        rankingButton.addActionListener(e -> exibirRankingClientes());
+        btnBuscar.addActionListener(e -> {
+            try {
+                buscarClientes();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+        btnAdicionarCliente.addActionListener(e -> {
+            try {
+                abrirAdicionarCliente();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+        btnAdicionarVeiculo.addActionListener(e -> {
+            try {
+                abrirAdicionarVeiculo();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+        historicoButton.addActionListener(e -> {
+            try {
+                exibirHistorico();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+        rankingButton.addActionListener(e -> {
+            try {
+                exibirRankingClientes();
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
 
         setVisible(true);
     }
 
-    private void atualizarListaClientes() {
+    private void atualizarListaClientes() throws ClienteDAOException {
         listaClientesModel.clear();
         clientesCadastrados = clienteController.listarTodosClientes();
         for (ClienteModel cliente : clientesCadastrados) {
@@ -94,7 +130,7 @@ public class MenuCliente extends JFrame {
         }
     }
 
-    private void abrirAdicionarCliente() {
+    private void abrirAdicionarCliente() throws ClienteDAOException {
         String nome = JOptionPane.showInputDialog(this, "Digite o nome do cliente (ou deixe em branco para Anônimo):", "Adicionar Cliente", JOptionPane.PLAIN_MESSAGE);
         if (nome == null) return; // Cancelado
 
@@ -106,7 +142,7 @@ public class MenuCliente extends JFrame {
         atualizarListaClientes();
     }
 
-    private void abrirAdicionarVeiculo() {
+    private void abrirAdicionarVeiculo() throws ClienteDAOException {
         int selectedIndex = listaClientes.getSelectedIndex();
         if (selectedIndex == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecione um cliente na lista!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -126,7 +162,7 @@ public class MenuCliente extends JFrame {
         atualizarListaClientes();
     }
 
-    private void exibirHistorico() {
+    private void exibirHistorico() throws ClienteDAOException {
         int selectedIndex = listaClientes.getSelectedIndex();
         if (selectedIndex == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecione um cliente na lista!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -176,7 +212,13 @@ public class MenuCliente extends JFrame {
             }
 
             // Delegar ao Controller a filtragem
-            List<TicketModel> ticketsFiltrados = clienteController.filtrarTickets(idCliente, entrada, saida);
+            List<TicketModel> ticketsFiltrados = List.of();
+            try {
+                ticketsFiltrados = clienteController.filtrarTickets(idCliente, entrada, saida);
+            } catch (ClienteDAOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
 
             // Atualizar a tabela
             atualizarTabela(ticketsFiltrados, tableModel);
@@ -254,7 +296,7 @@ public class MenuCliente extends JFrame {
         };
     }
 
-    private void exibirRankingClientes() {
+    private void exibirRankingClientes() throws ClienteDAOException {
             JDialog dialog = new JDialog(this, "Ranking de Clientes", true);
             dialog.setSize(600, 400);
             dialog.setLocationRelativeTo(this);
@@ -284,7 +326,13 @@ public class MenuCliente extends JFrame {
 
                 int mesNumero = mesSelecionado.equals("Todos") ? -1 : comboMesParaNumero(mesSelecionado);
 
-                List<ClienteModel> ranking = clienteController.listarRankingClientes(mesNumero, anoSelecionado.isEmpty() ? -1 : Integer.parseInt(anoSelecionado));
+                List<ClienteModel> ranking = List.of();
+                try {
+                    ranking = clienteController.listarRankingClientes(mesNumero, anoSelecionado.isEmpty() ? -1 : Integer.parseInt(anoSelecionado));
+                } catch (NumberFormatException | ClienteDAOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
 
                 atualizarTabelaRanking(ranking, tableModel);
             });
@@ -328,7 +376,7 @@ public class MenuCliente extends JFrame {
         }
     }
 
-    private void buscarClientes() {
+    private void buscarClientes() throws ClienteDAOException {
         String termo = barraDeBusca.getText().trim();
         if (termo.isEmpty()) {
             atualizarListaClientes();
@@ -353,7 +401,7 @@ public class MenuCliente extends JFrame {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClienteDAOException {
         new MenuCliente();
     }
 

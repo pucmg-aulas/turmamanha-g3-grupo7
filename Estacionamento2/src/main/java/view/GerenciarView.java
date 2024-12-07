@@ -3,10 +3,11 @@ package view;
 import controller.EstacionamentoController;
 import model.*;
 import dao.ClienteDAO;
+import dao.ClienteDAOException;
+import dao.VagaDAOException;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -25,12 +26,6 @@ public class GerenciarView extends JFrame {
     private JPanel ticketsEncerradosPanel;
     private JPanel clientesPanel;
 
-    // Botões da aba de Vagas
-    private JButton editarTipoVagaButton;
-    private JButton gerarVagasButton;
-    private JButton fecharVagasButton;
-
-
     // Campos para dados gerais
     private JTextField txtId;
     private JTextField txtNome;
@@ -41,19 +36,16 @@ public class GerenciarView extends JFrame {
     private JComboBox<String> mesComboBox;
     private JComboBox<Integer> anoComboBox;
 
-
     // Tabelas
     private JTable tabelaVagas;
     private JTable tabelaTickets;
     private JTable tabelaClientes;
     private JTable tabelaTicketsEncerrados;
 
-
-    public GerenciarView(EstacionamentoModel estacionamento) {
+    public GerenciarView(EstacionamentoModel estacionamento) throws ClienteDAOException {
         this.estacionamento = estacionamento;
         this.clienteDAO = new ClienteDAO();
         this.estacionamentoController = new EstacionamentoController(estacionamento);
-
 
         // Carregar vagas do estacionamento
         estacionamento.carregarVagas();
@@ -91,7 +83,6 @@ public class GerenciarView extends JFrame {
                 carregarTicketsAtivos(); // Carregar os tickets ativos ao acessar a aba
             }
         });
-
 
         // Painel de botões
         JPanel botoesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -168,8 +159,8 @@ public class GerenciarView extends JFrame {
         gbc.gridx = 1;
 
         // Configurar combo boxes
-        mesComboBox = new JComboBox<>(new String[]{"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"});
+        mesComboBox = new JComboBox<>(new String[] { "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" });
         anoComboBox = new JComboBox<>();
         int anoAtual = LocalDateTime.now().getYear();
         for (int ano = anoAtual - 5; ano <= anoAtual + 5; ano++) {
@@ -199,13 +190,25 @@ public class GerenciarView extends JFrame {
 
         // Botões
         JPanel botoesVagas = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRemoverVaga = new JButton("Remover Vaga");
         JButton btnEstacionar = new JButton("Estacionar");
         JButton btnLiberarVaga = new JButton("Liberar Vaga"); // Corrigido aqui
 
-
-        btnEstacionar.addActionListener(e -> estacionarVeiculo());
-        btnLiberarVaga.addActionListener(e -> liberarVaga()); // Listener para liberar vaga
+        btnEstacionar.addActionListener(e -> {
+            try {
+                estacionarVeiculo();
+            } catch (ClienteDAOException e1) {
+                e1.printStackTrace();
+            } catch (VagaDAOException e1) {
+                e1.printStackTrace();
+            }
+        });
+        btnLiberarVaga.addActionListener(e -> {
+            try {
+                liberarVaga();
+            } catch (VagaDAOException e1) {
+                e1.printStackTrace();
+            }
+        }); // Listener para liberar vaga
 
         // Adicionar os botões ao painel
         botoesVagas.add(btnEstacionar);
@@ -215,7 +218,6 @@ public class GerenciarView extends JFrame {
         vagasPanel.add(botoesVagas, BorderLayout.NORTH);
         vagasPanel.add(scrollPane, BorderLayout.CENTER);
     }
-
 
     private void inicializarTickets() {
         ticketsPanel = new JPanel(new BorderLayout());
@@ -242,7 +244,6 @@ public class GerenciarView extends JFrame {
         carregarTicketsEncerrados();
     }
 
-
     private void inicializarClientes() {
         clientesPanel = new JPanel(new BorderLayout());
 
@@ -253,7 +254,7 @@ public class GerenciarView extends JFrame {
         clientesPanel.add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void preencherDados() {
+    private void preencherDados() throws ClienteDAOException {
         // Dados gerais
         txtId.setText(String.valueOf(estacionamento.getId()));
         txtNome.setText(estacionamento.getNome());
@@ -273,7 +274,7 @@ public class GerenciarView extends JFrame {
         carregarClientes();
     }
 
-    private void carregarClientes() {
+    private void carregarClientes() throws ClienteDAOException {
         List<ClienteModel> clientes = clienteDAO.listarTodos();
         Object[][] dadosClientes = new Object[clientes.size()][3];
 
@@ -284,15 +285,14 @@ public class GerenciarView extends JFrame {
             dadosClientes[i][2] = cliente.getVeiculos().isEmpty()
                     ? ""
                     : cliente.getVeiculos().stream()
-                    .map(VeiculoModel::getPlaca)
-                    .reduce((placa1, placa2) -> placa1 + ", " + placa2)
-                    .orElse("");
+                            .map(VeiculoModel::getPlaca)
+                            .reduce((placa1, placa2) -> placa1 + ", " + placa2)
+                            .orElse("");
         }
 
         tabelaClientes.setModel(new javax.swing.table.DefaultTableModel(
                 dadosClientes,
-                new String[]{"ID", "Nome", "Placa do Veículo"}
-        ));
+                new String[] { "ID", "Nome", "Placa do Veículo" }));
     }
 
     private void atualizarTabelaVagas() {
@@ -313,8 +313,7 @@ public class GerenciarView extends JFrame {
 
         tabelaVagas.setModel(new javax.swing.table.DefaultTableModel(
                 dadosVagas,
-                new String[]{"ID", "Tipo", "Status", "Veículo"}
-        ));
+                new String[] { "ID", "Tipo", "Status", "Veículo" }));
     }
 
     private void calcularArrecadacaoMensal() {
@@ -332,7 +331,7 @@ public class GerenciarView extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void estacionarVeiculo() {
+    private void estacionarVeiculo() throws ClienteDAOException, VagaDAOException {
         int selectedRow = tabelaVagas.getSelectedRow(); // Recupera a linha selecionada
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Selecione uma vaga para estacionar.");
@@ -357,7 +356,8 @@ public class GerenciarView extends JFrame {
             JOptionPane.showMessageDialog(this, "Veículo estacionado com sucesso!");
             atualizarTabelaVagas(); // Atualizar a tabela de vagas para refletir o novo status
         } else {
-            JOptionPane.showMessageDialog(this, "Falha ao estacionar o veículo. Verifique a vaga selecionada ou a placa.");
+            JOptionPane.showMessageDialog(this,
+                    "Falha ao estacionar o veículo. Verifique a vaga selecionada ou a placa.");
         }
     }
 
@@ -365,24 +365,25 @@ public class GerenciarView extends JFrame {
         EstacionamentoController controller = new EstacionamentoController(estacionamento);
         List<TicketModel> ticketsAtivos = controller.getTicketsAtivos(); // Busca todos os tickets ativos
 
-        Object[][] dadosTickets = new Object[ticketsAtivos.size()][5]; // 5 colunas: ID Ticket, ID Vaga, Placa, Entrada, Valor
+        Object[][] dadosTickets = new Object[ticketsAtivos.size()][5]; // 5 colunas: ID Ticket, ID Vaga, Placa, Entrada,
+                                                                       // Valor
 
         for (int i = 0; i < ticketsAtivos.size(); i++) {
             TicketModel ticket = ticketsAtivos.get(i);
-            dadosTickets[i][0] = ticket.getIdTicket();    // ID do Ticket
-            dadosTickets[i][1] = ticket.getIdVaga();     // ID da Vaga
-            dadosTickets[i][2] = ticket.getPlaca();      // Placa do Veículo
-            dadosTickets[i][3] = ticket.getEntrada();    // Hora de Entrada
-            dadosTickets[i][4] = ticket.getCusto();      // Valor Atual (geralmente 0 para tickets em aberto)
+            dadosTickets[i][0] = ticket.getIdTicket(); // ID do Ticket
+            dadosTickets[i][1] = ticket.getIdVaga(); // ID da Vaga
+            dadosTickets[i][2] = ticket.getPlaca(); // Placa do Veículo
+            dadosTickets[i][3] = ticket.getEntrada(); // Hora de Entrada
+            dadosTickets[i][4] = ticket.getCusto(); // Valor Atual (geralmente 0 para tickets em aberto)
         }
 
         tabelaTickets.setModel(new javax.swing.table.DefaultTableModel(
                 dadosTickets,
-                new String[]{"ID Ticket", "ID Vaga", "Placa", "Entrada", "Valor"} // Cabeçalhos das colunas
+                new String[] { "ID Ticket", "ID Vaga", "Placa", "Entrada", "Valor" } // Cabeçalhos das colunas
         ));
     }
 
-    private void liberarVaga() {
+    private void liberarVaga() throws VagaDAOException {
         int selectedRow = tabelaVagas.getSelectedRow(); // Recupera a linha selecionada
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Selecione uma vaga para liberar.");
@@ -418,18 +419,17 @@ public class GerenciarView extends JFrame {
         Object[][] dadosTickets = new Object[ticketsEncerrados.size()][5];
         for (int i = 0; i < ticketsEncerrados.size(); i++) {
             TicketModel ticket = ticketsEncerrados.get(i);
-            dadosTickets[i][0] = ticket.getIdVaga();  // ID da Vaga
-            dadosTickets[i][1] = ticket.getPlaca();   // Placa do veículo
+            dadosTickets[i][0] = ticket.getIdVaga(); // ID da Vaga
+            dadosTickets[i][1] = ticket.getPlaca(); // Placa do veículo
             dadosTickets[i][2] = ticket.getEntrada(); // Data de entrada
-            dadosTickets[i][3] = ticket.getSaida();   // Data de saída
+            dadosTickets[i][3] = ticket.getSaida(); // Data de saída
             dadosTickets[i][4] = String.format("R$ %.2f", ticket.getCusto()); // Valor do ticket
         }
 
         // Atualizar o modelo da tabela com os novos dados
         tabelaTicketsEncerrados.setModel(new javax.swing.table.DefaultTableModel(
                 dadosTickets,
-                new String[]{ "ID Vaga", "Placa", "Entrada", "Saída", "Valor" }
-        ));
+                new String[] { "ID Vaga", "Placa", "Entrada", "Saída", "Valor" }));
     }
 
 }

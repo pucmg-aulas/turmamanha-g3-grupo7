@@ -11,11 +11,11 @@ import java.util.Map;
 
 public class EstacionamentoDAO {
 
-    public int salvarEstacionamento(EstacionamentoModel estacionamento) {
+    public int salvarEstacionamento(EstacionamentoModel estacionamento) throws EstacionamentoDAOException {
         String sql = "INSERT INTO estacionamento (nome, endereco, telefone) VALUES (?, ?, ?) RETURNING id_estacionamento";
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setString(1, estacionamento.getNome());
             stmt.setString(2, estacionamento.getEndereco());
@@ -27,18 +27,18 @@ public class EstacionamentoDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Erro ao salvar estacionamento: " + e.getMessage());
+            throw new EstacionamentoDAOException("Erro ao salvar estacionamento", e);
         }
         return 0; // Retorne 0 ou lance uma exceção se falhar
     }
 
-    public List<EstacionamentoModel> listarEstacionamentos() {
+    public List<EstacionamentoModel> listarEstacionamentos() throws EstacionamentoDAOException {
         List<EstacionamentoModel> estacionamentos = new ArrayList<>();
         String sql = "SELECT id_estacionamento, nome, endereco, telefone FROM estacionamento";
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 int id = rs.getInt("id_estacionamento");
@@ -51,13 +51,13 @@ public class EstacionamentoDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Erro ao listar estacionamentos: " + e.getMessage());
+            throw new EstacionamentoDAOException("Erro ao listar estacionamentos", e);
         }
 
         return estacionamentos;
     }
 
-    public boolean removerEstacionamentoPorId(int id) {
+    public boolean removerEstacionamentoPorId(int id) throws EstacionamentoDAOException {
         String sqlVagas = "DELETE FROM vaga WHERE id_estacionamento = ?"; // Remove dependências
         String sqlEstacionamento = "DELETE FROM estacionamento WHERE id_estacionamento = ?";
         boolean removed = false;
@@ -66,7 +66,7 @@ public class EstacionamentoDAO {
             connection.setAutoCommit(false);
 
             try (PreparedStatement stmtVagas = connection.prepareStatement(sqlVagas);
-                 PreparedStatement stmtEstacionamento = connection.prepareStatement(sqlEstacionamento)) {
+                    PreparedStatement stmtEstacionamento = connection.prepareStatement(sqlEstacionamento)) {
 
                 // Remove as vagas relacionadas ao estacionamento
                 stmtVagas.setInt(1, id);
@@ -91,18 +91,17 @@ public class EstacionamentoDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+            throw new EstacionamentoDAOException("Erro ao remover estacionamento", e);
         }
 
         return removed;
     }
 
-
-    public void salvarVagas(List<VagaModel> vagas) {
+    public void salvarVagas(List<VagaModel> vagas) throws EstacionamentoDAOException {
         String sql = "INSERT INTO vaga (id_vaga, ocupada, id_estacionamento, tipo) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             for (VagaModel vaga : vagas) {
                 stmt.setString(1, vaga.getId());
@@ -119,17 +118,16 @@ public class EstacionamentoDAO {
             int[] resultados = stmt.executeBatch();
             System.out.printf("Batch executado. Total de registros salvos: %d%n", resultados.length);
         } catch (SQLException e) {
-            System.err.println("Erro ao salvar vagas: " + e.getMessage());
+            throw new EstacionamentoDAOException("Erro ao salvar vagas", e);
         }
     }
 
-
-    public EstacionamentoModel buscarEstacionamentoPorId(int id) {
+    public EstacionamentoModel buscarEstacionamentoPorId(int id) throws EstacionamentoDAOException {
         String sql = "SELECT id_estacionamento, nome, endereco, telefone FROM estacionamento WHERE id_estacionamento = ?";
         EstacionamentoModel estacionamento = null;
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -143,7 +141,7 @@ public class EstacionamentoDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Erro ao buscar estacionamento: " + e.getMessage());
+            throw new EstacionamentoDAOException("Erro ao buscar estacionamento por ID", e);
         }
 
         return estacionamento;
@@ -154,7 +152,7 @@ public class EstacionamentoDAO {
         String sql = "SELECT id_vaga, tipo, ocupada FROM vaga WHERE id_estacionamento = ?";
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setInt(1, idEstacionamento);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -190,7 +188,6 @@ public class EstacionamentoDAO {
         return vagas;
     }
 
-
     public static List<Object[]> buscarRankingEstacionamentos() {
         List<Object[]> ranking = new ArrayList<>();
         String sql = "SELECT e.nome, COALESCE(SUM(t.custo), 0) AS total_faturado " +
@@ -200,13 +197,13 @@ public class EstacionamentoDAO {
                 "ORDER BY total_faturado DESC";
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 String nome = rs.getString("nome");
                 double totalFaturado = rs.getDouble("total_faturado");
-                ranking.add(new Object[]{nome, totalFaturado});
+                ranking.add(new Object[] { nome, totalFaturado });
             }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar ranking de estacionamentos: " + e.getMessage());
@@ -217,21 +214,21 @@ public class EstacionamentoDAO {
 
     public List<Map<String, Object>> listarRankingUtilizacao() {
         String sql = """
-        SELECT 
-            e.id_estacionamento AS idEstacionamento,
-            e.nome AS nomeEstacionamento,
-            COALESCE(COUNT(t.id_ticket), 0) AS totalUtilizacoes
-        FROM estacionamento e
-        LEFT JOIN ticket t ON e.id_estacionamento = t.id_estacionamento
-        GROUP BY e.id_estacionamento, e.nome
-        ORDER BY totalUtilizacoes DESC
-    """;
+                    SELECT
+                        e.id_estacionamento AS idEstacionamento,
+                        e.nome AS nomeEstacionamento,
+                        COALESCE(COUNT(t.id_ticket), 0) AS totalUtilizacoes
+                    FROM estacionamento e
+                    LEFT JOIN ticket t ON e.id_estacionamento = t.id_estacionamento
+                    GROUP BY e.id_estacionamento, e.nome
+                    ORDER BY totalUtilizacoes DESC
+                """;
 
         List<Map<String, Object>> ranking = new ArrayList<>();
 
         try (Connection connection = BancoDados.getInstancia().getConexao();
-             PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();

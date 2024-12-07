@@ -1,6 +1,7 @@
 package controller;
 
 import dao.EstacionamentoDAO;
+import dao.EstacionamentoDAOException;
 import model.*;
 
 import java.util.ArrayList;
@@ -15,11 +16,11 @@ public class ListarEstacionamentoController {
         this.estacionamentoDAO = new EstacionamentoDAO();
     }
 
-    public List<EstacionamentoModel> listarEstacionamentos() {
+    public List<EstacionamentoModel> listarEstacionamentos() throws EstacionamentoDAOException {
         return estacionamentoDAO.listarEstacionamentos();
     }
 
-    public boolean adicionarEstacionamento(String nome, String endereco, String telefone, int colunas, int vagasPorColuna) {
+    public boolean adicionarEstacionamento(String nome, String endereco, String telefone, int colunas, int vagasPorColuna) throws EstacionamentoDAOException {
         EstacionamentoModel estacionamento = new EstacionamentoModel(nome, endereco, telefone);
 
         int idEstacionamento = estacionamentoDAO.salvarEstacionamento(estacionamento);
@@ -32,7 +33,7 @@ public class ListarEstacionamentoController {
         return false;
     }
 
-    private void gerarVagas(EstacionamentoModel estacionamento, int colunas, int vagasPorColuna) {
+    private void gerarVagas(EstacionamentoModel estacionamento, int colunas, int vagasPorColuna) throws EstacionamentoDAOException {
         List<VagaModel> vagas = new ArrayList<>();
         int totalVagas = colunas * vagasPorColuna;
 
@@ -75,11 +76,11 @@ public class ListarEstacionamentoController {
     }
 
 
-    public boolean removerEstacionamento(int id) {
+    public boolean removerEstacionamento(int id) throws EstacionamentoDAOException {
         return estacionamentoDAO.removerEstacionamentoPorId(id);
     }
 
-    public EstacionamentoModel buscarEstacionamentoPorId(int id) {
+    public EstacionamentoModel buscarEstacionamentoPorId(int id) throws EstacionamentoDAOException {
         return estacionamentoDAO.buscarEstacionamentoPorId(id);
     }
 
